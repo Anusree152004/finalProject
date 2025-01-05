@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sponsor Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sponsor_dash.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Welcome {{ sponsor.user.name }}</h1>
+    </header>
+    <div class="container">
+        <!-- Profile Section -->
+        <div class="profile-section">
+            <!-- Profile Picture -->
+        
+            <!-- Profile Details -->
+            <div class="profile-details">
+                
+                <p><strong>Bio:</strong> {{ sponsor.user.bio  }}</p>
+                <p><strong>Location:</strong> {{ sponsor.location  }}</p>
+                <p><strong>Company:</strong> {{ sponsor.company_name }}</p>
+                <p><strong>Category:</strong> {{ sponsor.category }}</p>
+            </div>
+        </div>
+   
+    
+            <div class="profile-buttons">
+                <button>Update Profile</button>
+                <button>Add Post</button>
+            </div>
+        </div>
+
+        <!-- Posts Section -->
+        <div class="posts-section">
+            <h2>Your Posts</h2>
+
+            <div class="post">
+                <h3>Product Launch: New Tech Gadget</h3>
+                <img src="{{ url_for('static', filename='images/post-image1.jpg') }}" alt="Product Image">
+                <div class="post-caption">
+                    <p>Introducing the newest tech gadget to revolutionize your daily life. Available now!</p>
+                </div>
+                <div class="post-collaboration">
+                    <p><strong>Collaborating Influencer:</strong> Jane Doe</p>
+                </div>
+                <div class="social-metrics">
+                    <div>Likes: 1,200</div>
+                    <div>Shares: 800</div>
+                    <div>Comments: 150</div>
+                    <div>Views: 5,000</div>
+                    <div>Engagement Rate: 4.5%</div>
+                </div>
+                <button class="delete-button" onclick="deletePost(1)">Delete Post</button>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="nav-buttons">
+            <button>Create Campaign</button>
+            <button>View Campaigns</button>
+            <button>View Requests</button>
+            <button>Search</button>
+            <button>Logout</button>
+        </div>
+    </div>
+
+    <script>
+        function deletePost(postId) {
+            const confirmation = confirm("Are you sure you want to delete this post?");
+            if (confirmation) {
+                alert(`Post ${postId} deleted successfully.`);
+                // Add your backend call here to handle post deletion
+            }
+        }
+    </script>
+</body>
+</html>

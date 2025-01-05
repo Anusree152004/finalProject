@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Influencer Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/influencer_dash.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Welcome {{ influencer.user.name }}</h1>
+    </header>
+    <div class="container">
+        <!-- Profile Section -->
+        <div class="profile-section">
+            <!-- <img src="profile-placeholder.png" alt="Influencer Profile"> -->
+            <div class="profile-details">
+              
+              <p><strong>Bio:</strong> {{ influencer.user.bio }}</p>
+                <!-- <p><strong>Followers:</strong> 120,000</p>
+                <p><strong>Engagement Rate:</strong> 5.2%</p> -->
+            </div>
+            <div class="profile-buttons">
+                <button onclick="updateProfile()">Update Profile</button>
+                <button onclick="addPost()">Add Post</button>
+            </div>
+        </div>
+
+        Posts Section
+        <div class="posts-section">
+            <h2>Your Posts</h2>
+
+            <!-- Example Post 1 -->
+            <div class="post">
+                <h3>Summer Fashion Collection</h3>
+               <!--<img src="post-image1.jpg" alt="Fashion Post">--> 
+                <div class="post-caption">
+                    <p>Check out my favorite summer outfits from FashionCo! #ad #summerstyle</p>
+                </div>
+
+                <div class="social-metrics">
+                    <div>Likes: 1,500</div>
+                    <div>Shares: 700</div>
+                    <div>Comments: 200</div>
+                    <div>Views: 6,000</div>
+                    <div>Engagement Rate: 5.1%</div>
+                </div>
+                <button class="delete-button" onclick="deletePost(1)">Delete Post</button>
+            </div>
+
+            
+        </div>
+
+        <!-- Social Media Analysis Graphs -->
+        <div class="graph-section">
+            <h2>Social Media Performance</h2>
+            <div class="graph-container">
+                <div>
+                    <h3>Followers Growth</h3>
+                    <canvas id="followersGrowthChart"></canvas>
+                </div>
+                <div>
+                    <h3>Engagement Rate</h3>
+                    <canvas id="engagementRateChart"></canvas>
+                </div>
+            </div>
+            <!-- Added New Chart: Social Media Metrics -->
+            <h2>Social Media Metrics</h2>
+            <canvas id="social-media-chart"></canvas>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="nav-buttons">
+            <button onclick="viewCampaigns()">Campaign</button>
+            <button onclick="viewRequests()">Requests</button>
+            <button onclick="searchFunction()">Search</button>
+            <button onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    
+    
+</body>
+</html>

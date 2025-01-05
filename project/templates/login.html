@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Connect & Collaborate</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+
+</head>
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul>
+        {% for category, message in messages %}
+          <li class="flash-message {{ category }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %} 
+    <!-- Login Form Container -->
+    <div class="login-container">
+        <h2>Login</h2>
+        <form method="POST" action="{{ url_for('login') }}" onsubmit="return validateLoginForm()">
+            <!-- Username -->
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+
+            <!-- Password -->
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn">Login</button>
+        </form>
+
+        <!-- Signup Option -->
+        <div class="signup-option">
+            <p>Don't have an account?</p>
+            <a href="{{ url_for('signup') }}">Sign up</a>
+        </div>
+    </div>
+
+    <script>
+        // Validate the Login form
+        function validateLoginForm() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            // Check if both fields are empty
+            if (!username || !password) {
+                alert("Both fields are required.");
+                return false;
+            }
+
+            // Validate password strength (optional - can be removed if not needed)
+            const passwordRegex = /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{6,}$/;
+            if (password && !passwordRegex.test(password)) {
+                alert("Password must be at least 6 characters long, contain at least one uppercase letter and one number.");
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home | Connect & Collaborate</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <header>
+        <nav>
+            <div class="logo">InfluencerHub</div>
+            <ul class="nav-links">
+                <li><a href="#">Home</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#testimonials">Testimonials</a></li>
+                <li><a href="/login">Login</a></li>
+                <li><a href="/signup">Sign Up</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Connect. Collaborate. Grow.</h1>
+            <p>The ultimate platform for sponsors and influencers to collaborate and achieve marketing success.</p>
+            <!-- <div class="cta-buttons">
+                <a href="/signup?sponsor=true" class="btn">Join as Sponsor</a>
+                <a href="/signup?influencer=true" class="btn">Join as Influencer</a>
+            </div> -->
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features">
+        <h2>Features</h2>
+        <div class="features-container">
+            <div class="feature-card">
+                <img src="{{ url_for('static', filename='images/influencers.jpg') }}" alt="Discover Influencers">
+                <div class="feature-card-content">
+                    <h3>Discover Influencers</h3>
+                    <p>Easily search and find influencers based on your needs. Tailor your search by categories, location, budget, and more.</p>
+                </div>
+            </div>
+            <div class="feature-card">
+                <img src="{{ url_for('static', filename='images/campagin.jpg') }}" alt="Create Campaigns">
+                <div class="feature-card-content">
+                    <h3>Create Campaigns</h3>
+                    <p>Launch and manage marketing campaigns with ease. Track performance and adjust strategies for success.</p>
+                </div>
+            </div>
+            <div class="feature-card">
+                <img src="{{ url_for('static', filename='images/analysis.jpg') }}" alt="Real-Time Analytics">
+                <div class="feature-card-content">
+                    <h3>Real-Time Analytics</h3>
+                    <p>Monitor your campaign performance in real-time and analyze the results to optimize your strategies.</p>
+                </div>
+            </div>
+            <div class="feature-card">
+                <img src="{{ url_for('static', filename='images/connection.jpg') }}" alt="Build Connections">
+                <div class="feature-card-content">
+                    <h3>Build Connections</h3>
+                    <p>Collaborate with influencers and other industry leaders to grow your brand and increase reach.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <ul>
+                <li><a href="#">Privacy Policy</a></li>
+                <li><a href="#">Terms of Service</a></li>
+                <li><a href="#">Contact Us</a></li>
+            </ul>
+            <div class="social-icons">
+                <a href="#" class="fab fa-facebook-f"></a>
+                <a href="#" class="fab fa-twitter"></a>
+                <a href="#" class="fab fa-instagram"></a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

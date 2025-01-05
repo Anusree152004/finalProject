@@ -1,0 +1,96 @@
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(to right, #1e3c72, #9c27b0);
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 800px;
+    margin: 2rem auto;
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.form-header {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #333;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 0.8rem;
+    margin-top: 0.3rem;
+    font-size: 1rem;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.role-selection {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.role-selection button {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    background-color: #1e3c72;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.role-selection button:hover {
+    background-color: #9c27b0;
+}
+
+.form-footer {
+    text-align: center;
+    font-size: 1rem;
+    margin-top: 1.5rem;
+}
+
+.form-footer a {
+    color: #1e3c72;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.form-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Styling for submit button */
+button[type="submit"] {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.2rem;
+    background-color: #1e3c72;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+button[type="submit"]:hover {
+    background-color: #9c27b0;
+}
