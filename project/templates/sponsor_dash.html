@@ -8,28 +8,43 @@
 </head>
 <body>
     <header>
-        <h1>Welcome {{ sponsor.user.name }}</h1>
+        <h1>Welcome, {{ sponsor.user.name }}</h1>
     </header>
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
     <div class="container">
+            
         <!-- Profile Section -->
         <div class="profile-section">
             <!-- Profile Picture -->
-        
+            <div class="profile-picture">
+                {% if sponsor.user.profile_pic %}
+                    <img src="{{ url_for('static', filename=sponsor.user.profile_pic) }}" alt="Profile Picture">
+                {% else %}
+                    <img src="{{ url_for('static', filename='images/default_profile.png') }}" alt="Default Profile Picture">
+                {% endif %}
+            </div>
             <!-- Profile Details -->
             <div class="profile-details">
-                
-                <p><strong>Bio:</strong> {{ sponsor.user.bio  }}</p>
-                <p><strong>Location:</strong> {{ sponsor.location  }}</p>
+                <p><strong>Bio:</strong> {{ sponsor.user.bio }}</p>
+                <p><strong>Location:</strong> {{ sponsor.location }}</p>
                 <p><strong>Company:</strong> {{ sponsor.company_name }}</p>
                 <p><strong>Category:</strong> {{ sponsor.category }}</p>
             </div>
         </div>
-   
-    
-            <div class="profile-buttons">
-                <button>Update Profile</button>
-                <button>Add Post</button>
-            </div>
+        <div class="profile-buttons">
+            <a href="{{ url_for('sponsors.update_profile') }}" class="button-link"><button>Update Profile</button></a>
+            <button>Add Post</button>
         </div>
 
         <!-- Posts Section -->
@@ -58,11 +73,20 @@
 
         <!-- Navigation Buttons -->
         <div class="nav-buttons">
-            <button>Create Campaign</button>
+            <a href="{{ url_for('sponsors.create_campaign') }}">
+                <button>Create Campaign</button>
+            </a>
+            <a href="{{ url_for('sponsors.view_campaigns') }}">
             <button>View Campaigns</button>
+        </a>
             <button>View Requests</button>
+            <a href="{{ url_for('sponsors.influe_search') }}">
             <button>Search</button>
-            <button>Logout</button>
+        </a>
+            <form action="{{ url_for('logout') }}" method="POST">
+                <button type="submit">Logout</button>
+            </form>
+          
         </div>
     </div>
 
@@ -74,6 +98,18 @@
                 // Add your backend call here to handle post deletion
             }
         }
+            document.addEventListener('DOMContentLoaded', function() {
+                const flashMessages = document.querySelector('.flash-messages');
+                if (flashMessages) {
+                    setTimeout(() => {
+                        flashMessages.style.transition = 'opacity 1s';
+                        flashMessages.style.opacity = '0';
+                        setTimeout(() => {
+                            flashMessages.remove();
+                        }, 1000);
+                    }, 3000); // Display for 3 seconds
+                }
+            });
     </script>
 </body>
 </html>

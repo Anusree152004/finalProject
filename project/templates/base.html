@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            {% for breadcrumb in generate_breadcrumbs() %}
+                {% if breadcrumb.url %}
+                    <li class="breadcrumb-item"><a href="{{ breadcrumb.url }}">{{ breadcrumb.name }}</a></li>
+                {% else %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ breadcrumb.name }}</li>
+                {% endif %}
+            {% endfor %}
+        </ol>
+    </nav>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

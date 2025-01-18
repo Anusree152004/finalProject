@@ -1,0 +1,124 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #003366;
+    color: white;
+    padding: 10px 0;
+    text-align: center;
+}
+
+.container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.search-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+
+.search-buttons button {
+    padding: 12px 25px;
+    background-color: #003366;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.search-buttons button:hover {
+    background-color: #002244;
+}
+
+.search-options {
+    margin-bottom: 20px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.search-options input,
+.search-options select {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+/* Influencer List */
+.influencer-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.influencer-card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    width: calc(33.333% - 20px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.influencer-card img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin-bottom: 15px;
+}
+
+.influencer-card .card-details {
+    flex-grow: 1;
+}
+
+.influencer-card h3 {
+    margin: 0 0 10px;
+}
+
+.influencer-card p {
+    margin: 5px 0;
+}
+
+.influencer-card .view-profile-button,
+.influencer-card .request-button {
+    background-color: #003366;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+    width: 100%;
+}
+
+.influencer-card .view-profile-button:hover,
+.influencer-card .request-button:hover {
+    background-color: #002244;
+}
+
+.no-results {
+    text-align: center;
+    font-size: 18px;
+    color: #555;
+}

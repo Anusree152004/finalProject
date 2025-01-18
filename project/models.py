@@ -48,6 +48,7 @@ class User(db.Model,UserMixin):
     # Relationships
     sponsor = db.relationship('Sponsor', backref='user', uselist=False)
     influencer = db.relationship('Influencer', backref='user', uselist=False)
+    social_media_metrics = db.relationship('SocialMediaMetric', backref='user', lazy=True)
     post = db.relationship('Post', backref='user', lazy=True)
  #   notification = db.relationship('Notification', backref='user', lazy=True)
 
@@ -76,7 +77,7 @@ class Influencer(db.Model):
     # campaigns = db.relationship('Campaign', secondary=campaign_influencer, backref='influencers', lazy=True)
     campaign_requests = db.relationship('CampaignRequest', backref='influencer', lazy=True)
     influencer_requests = db.relationship('InfluencerRequest', backref='influencer_requests', lazy=True)
-    social_media_metrics = db.relationship('SocialMediaMetric', backref='influencer', lazy=True)
+   # social_media_metrics = db.relationship('SocialMediaMetric', backref='influencer', lazy=True)
     metrics_history = db.relationship('MetricsHistory', backref='influencer', lazy=True)
 
 # Campaign Table
@@ -135,8 +136,8 @@ class InfluencerRequest(db.Model):
 class SocialMediaMetric(db.Model):
     __tablename__ = 'social_media_metrics'
     metric_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    influencer_id = db.Column(db.Integer, db.ForeignKey('influencer.influencer_id'), nullable=False, index=True)
-    sponsor_id = db.Column(db.Integer, db.ForeignKey('sponsor.sponsor_id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False, index=True)
+    sponsor_id = db.Column(db.Integer, db.ForeignKey('sponsor.sponsor_id'), index=True,nullable=True)
     followers = db.Column(db.Integer, nullable=False)
     likes = db.Column(db.Integer, nullable=False)
     shares = db.Column(db.Integer)
@@ -145,7 +146,7 @@ class SocialMediaMetric(db.Model):
     engagement_rate = db.Column(db.Float, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-  #  influencer = db.relationship('Influencer', backref='social_media_metrics', lazy=True)
+    #user = db.relationship('User', backref='social_media_metrics', lazy=True)
 
 # # Metric History Table
 class MetricsHistory(db.Model):

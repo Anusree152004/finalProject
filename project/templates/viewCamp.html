@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Campaigns</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/viewCamp.css') }}">
+    <style>
+        .hidden-details {
+            display: none;
+        }
+        .near-end {
+            border: 2px solid red;
+            background-color: #ffe6e6;
+        }
+        .alert-message {
+            color: red;
+            font-weight: bold;
+        }
+        .button-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #003366; /* Dark blue button */
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .button-link:hover {
+            background-color: #002244; /* Darker blue on hover */
+        }
+    </style>
+    <script>
+        function toggleDetails(id) {
+            var element = document.getElementById(id);
+            if (element.style.display === "none" || element.style.display === "") {
+                element.style.display = "block";
+            } else {
+                element.style.display = "none";
+            }
+        }
+
+        function deleteCampaign(campaignId) {
+            if (confirm('Are you sure you want to delete this campaign?')) {
+                fetch(`{{ url_for('sponsors.delete_campaign', campaign_id=0) }}`.replace('0', campaignId), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Failed to delete campaign.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An unexpected error occurred.');
+                });
+            }
+        }
+
+        function checkEndDates() {
+            const today = new Date();
+            const campaigns = document.querySelectorAll('.campaign-section');
+            campaigns.forEach(campaign => {
+                const endDate = new Date(campaign.dataset.endDate);
+                const timeDiff = endDate - today;
+                const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+                if (daysDiff <= 7) { // Highlight campaigns ending in 7 days or less
+                    campaign.classList.add('near-end');
+                    const alertMessage = document.createElement('p');
+                    alertMessage.className = 'alert-message';
+                    alertMessage.textContent = 'This campaign is ending soon!';
+                    campaign.querySelector('.campaign-details').prepend(alertMessage);
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', checkEndDates);
+    </script>
+</head>
+<body>
+    <header>
+        <h1>View Campaigns</h1>
+    </header>
+     
+ <!-- Flash Messages -->
+ {% with messages = get_flashed_messages(with_categories=true) %}
+ {% if messages %}
+     <div class="flash-messages">
+         {% for category, message in messages %}
+             <div class="alert alert-{{ category }}">
+                 {{ message }}
+             </div>
+         {% endfor %}
+     </div>
+ {% endif %}
+{% endwith %}
+ <div class="container">
+    <div class="container">
+        <!-- Campaign Section -->
+        {% for campaign in campaigns %}
+        <div class="campaign-section" data-end-date="{{ campaign.end_date.strftime('%Y-%m-%d') }}">
+            <!-- Campaign Header -->
+            <div class="campaign-header">
+                <h2>{{ campaign.title }}</h2>
+                <div class="campaign-buttons">
+                    
+                    <a href="{{ url_for('sponsors.update_campaign', campaign_id=campaign.campaign_id) }}" class="button-link">Update Campaign</a>
+                    <button onclick="deleteCampaign('{{ campaign.campaign_id }}')">Delete Campaign</button>
+                </div>
+            </div>
+
+            <!-- View Campaign Details Button -->
+            <button onclick="toggleDetails('campaign-details-{{ campaign.campaign_id }}')" class="view-details-btn">View Campaign Details</button>
+            
+            <!-- Campaign Details (Initially hidden) -->
+            <div id="campaign-details-{{ campaign.campaign_id }}" class="hidden-details campaign-details">
+                {% for photo in campaign.campaign_photo %}
+                <img src="{{ url_for('static', filename=photo.file_path)}}" alt="Campaign Photo">
+                {% endfor %}
+                <p><strong>Description:</strong> {{ campaign.description }}</p>
+                <p><strong>Budget:</strong> {{ campaign.budget }}</p>
+                <p><strong>Followers Range:</strong> {{ campaign.followers_range }}</p>
+                <p><strong>Start Date:</strong> {{ campaign.start_date.strftime('%Y-%m-%d') }}</p>
+                <p><strong>End Date:</strong> {{ campaign.end_date.strftime('%Y-%m-%d') }}</p>
+            </div>
+        </div>
+        {% endfor %}
+   
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const flashMessages = document.querySelector('.flash-messages');
+            if (flashMessages) {
+                setTimeout(() => {
+                    flashMessages.style.transition = 'opacity 1s';
+                    flashMessages.style.opacity = '0';
+                    setTimeout(() => {
+                        flashMessages.remove();
+                    }, 1000);
+                }, 3000); // Display for 3 seconds
+            }
+        });
+    </script>
+</body>
+</html>

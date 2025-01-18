@@ -1,0 +1,140 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+header {
+    background-color: #003366; /* Dark blue color */
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+}
+
+.container {
+    margin: 20px auto;
+    max-width: 1200px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.campaign-section {
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+}
+
+.campaign-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.campaign-header h2 {
+    margin: 0;
+}
+
+.campaign-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.campaign-buttons button {
+    padding: 10px 20px;
+    background-color: #003366; /* Dark blue button */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.campaign-details img {
+    max-width: 300px; /* Set maximum width */
+    height: auto; /* Maintain aspect ratio */
+    display: block;
+    margin: 0 auto 20px;
+}
+
+.campaign-details p {
+    margin: 5px 0;
+}
+
+.hidden-details {
+    display: none;
+}
+
+.requests-section, .accepted-requests-section {
+    margin-top: 30px;
+}
+
+.request, .accepted-request {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    background: #f9f9f9;
+}
+
+.request-buttons, .accepted-request-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.request-buttons button, .accepted-request-buttons button {
+    padding: 10px 15px;
+    background-color: #003366; /* Dark blue button */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.request-buttons button:hover, .accepted-request-buttons button:hover {
+    background-color: #002244; /* Even darker blue on hover */
+}
+
+/* View button styles */
+.view-details-btn {
+    padding: 12px 25px;
+    background-color: #003366; /* Dark blue button */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+.view-details-btn:hover {
+    background-color: #002244; /* Even darker blue on hover */
+}
+.breadcrumb {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+    background-color: transparent;
+}
+  /* Flash Messages */
+  .flash-messages .alert {
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.flash-messages .alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.flash-messages .alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}

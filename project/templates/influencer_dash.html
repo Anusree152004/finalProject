@@ -5,23 +5,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Influencer Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/influencer_dash.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .graph-section {
+            background: linear-gradient(145deg, #ffffff, #f5f7ff);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 35px;
+            margin: 30px 0;
+            transition: transform 0.3s ease;
+        }
+    
+        .graph-section:hover {
+            transform: translateY(-5px);
+        }
+    
+        .graph-section h2 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            text-align: center;
+            position: relative;
+        }
+    
+        .graph-section h2:after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            margin: 10px auto;
+            border-radius: 2px;
+        }
+    
+        .graph-section canvas {
+            margin: 25px 0;
+            max-height: 400px;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.05));
+        }
+    
+        /* Style for the container of both charts */
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            padding: 20px;
+        }
+    
+        @media (min-width: 1024px) {
+            .charts-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
-        <h1>Welcome {{ influencer.user.name }}</h1>
+        <h1>Welcome {{ user.name }}</h1>
     </header>
+    
     <div class="container">
         <!-- Profile Section -->
         <div class="profile-section">
-            <!-- <img src="profile-placeholder.png" alt="Influencer Profile"> -->
+             <!-- Profile Picture -->
+             <div class="profile-picture">
+                {% if user.profile_pic %}
+                    <img src="{{ url_for('static', filename=user.profile_pic) }}" alt="Profile Picture">
+                {% else %}
+                    <img src="{{ url_for('static', filename='images/default_profile.png') }}" alt="Default Profile Picture">
+                {% endif %}
+            </div>
             <div class="profile-details">
               
-              <p><strong>Bio:</strong> {{ influencer.user.bio }}</p>
-                <!-- <p><strong>Followers:</strong> 120,000</p>
-                <p><strong>Engagement Rate:</strong> 5.2%</p> -->
+              <p><strong>Bio:</strong> {{ user.bio }}</p>
+             <p><strong>Category:</strong> {{ user.influencer.category }}</p>
+              {% if metrics %}
+                <p><strong>Followers:</strong>{{metrics.followers}}</p>
+                <p><strong>Engagement Rate:</strong> {{metrics.engagement_rate}}</p> 
+                {% else %}
+    <p>No social media metrics found for this user.</p>
+{% endif %}
             </div>
             <div class="profile-buttons">
-                <button onclick="updateProfile()">Update Profile</button>
+                <a href="{{ url_for('influencers.update_influencer_profile') }}" class="button-link"><button>Update Profile</button> </a>
                 <button onclick="addPost()">Add Post</button>
             </div>
         </div>
@@ -51,34 +119,224 @@
             
         </div>
 
-        <!-- Social Media Analysis Graphs -->
-        <div class="graph-section">
-            <h2>Social Media Performance</h2>
-            <div class="graph-container">
-                <div>
-                    <h3>Followers Growth</h3>
-                    <canvas id="followersGrowthChart"></canvas>
-                </div>
-                <div>
-                    <h3>Engagement Rate</h3>
-                    <canvas id="engagementRateChart"></canvas>
-                </div>
-            </div>
-            <!-- Added New Chart: Social Media Metrics -->
-            <h2>Social Media Metrics</h2>
-            <canvas id="social-media-chart"></canvas>
-        </div>
+        <!-- Graph Section -->
+    <h2>Social Media Performance</h2>
 
-        <!-- Navigation Buttons -->
+    <!-- Canvas for the graph -->
+<div class="graph-section">
+    <h2>Social Media Metrics</h2>
+
+    <!-- Followers and Engagement Rate Graph -->
+    <canvas id="followersEngagementChart" width="300" height="150"></canvas>
+
+    <!-- Likes, Shares, Comments, Reach Graph -->
+    <canvas id="socialMetricsChart" width="300" height="150"></canvas>
+
+    
+    <script>
+        // Helper function for creating gradients with more vibrant colors
+        function createGradient(ctx, color1, color2) {
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, color1);
+            gradient.addColorStop(0.6, color2);
+            gradient.addColorStop(1, 'rgba(255, 255, 255, 0.1)'); // Fade to transparent
+            return gradient;
+        }
+    
+        // Followers and Engagement Rate Chart
+        const followersEngagementCtx = document.getElementById('followersEngagementChart').getContext('2d');
+        const followersGradient = createGradient(followersEngagementCtx, 'rgba(255, 82, 132, 0.8)', 'rgba(255, 82, 132, 0.2)');
+        const engagementGradient = createGradient(followersEngagementCtx, 'rgba(54, 162, 235, 0.8)', 'rgba(54, 162, 235, 0.2)');
+    
+        new Chart(followersEngagementCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Followers', 'Engagement Rate'],
+                datasets: [{
+                    label: 'Social Media Metrics',
+                    data: ["{{ followers_data[0] }}", "{{ engagement_rate_data[0] }}"],
+                    backgroundColor: [followersGradient, engagementGradient],
+                    borderColor: ['rgba(255, 82, 132, 1)', 'rgba(54, 162, 235, 1)'],
+                    borderWidth: 2,
+                    borderRadius: 15,
+                    maxBarThickness: 80,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            font: {
+                                family: "'Helvetica Neue', 'Arial', sans-serif",
+                                size: 14
+                            },
+                            padding: 20
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleFont: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        padding: 12,
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return tooltipItem.raw.toLocaleString() + ' units';
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    duration: 2000,
+                    easing: 'easeOutQuart',
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { 
+                            color: 'rgba(200, 200, 200, 0.1)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            },
+                            padding: 10
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            },
+                            padding: 10
+                        }
+                    }
+                },
+                layout: {
+                    padding: 20
+                }
+            }
+        });
+    
+        // Likes, Shares, Comments, Reach Chart
+        const socialMetricsCtx = document.getElementById('socialMetricsChart').getContext('2d');
+        const likesGradient = createGradient(socialMetricsCtx, 'rgba(75, 192, 192, 0.8)', 'rgba(75, 192, 192, 0.2)');
+        const sharesGradient = createGradient(socialMetricsCtx, 'rgba(153, 102, 255, 0.8)', 'rgba(153, 102, 255, 0.2)');
+        const commentsGradient = createGradient(socialMetricsCtx, 'rgba(255, 159, 64, 0.8)', 'rgba(255, 159, 64, 0.2)');
+        const reachGradient = createGradient(socialMetricsCtx, 'rgba(255, 82, 132, 0.8)', 'rgba(255, 82, 132, 0.2)');
+    
+        new Chart(socialMetricsCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Likes', 'Shares', 'Comments', 'Reach'],
+                datasets: [{
+                    label: 'Social Media Metrics',
+                    data: [
+                        "{{ likes_data[0] }}",
+                        "{{ shares_data[0] }}",
+                        "{{ comments_data[0] }}",
+                        "{{ reach_data[0] }}"
+                    ],
+                    backgroundColor: [likesGradient, sharesGradient, commentsGradient, reachGradient],
+                    borderColor: [
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)',
+                        'rgba(255, 82, 132, 1)'
+                    ],
+                    borderWidth: 2,
+                    borderRadius: 15,
+                    maxBarThickness: 80,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            font: {
+                                family: "'Helvetica Neue', 'Arial', sans-serif",
+                                size: 14
+                            },
+                            padding: 20
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleFont: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        padding: 12,
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return tooltipItem.raw.toLocaleString() + ' units';
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    duration: 2000,
+                    easing: 'easeOutQuart',
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { 
+                            color: 'rgba(200, 200, 200, 0.1)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            },
+                            padding: 10
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            },
+                            padding: 10
+                        }
+                    }
+                },
+                layout: {
+                    padding: 20
+                }
+            }
+        });
+       
+    </script>
+    
+</div>
+       <!-- Navigation Buttons -->
         <div class="nav-buttons">
             <button onclick="viewCampaigns()">Campaign</button>
             <button onclick="viewRequests()">Requests</button>
-            <button onclick="searchFunction()">Search</button>
-            <button onclick="logout()">Logout</button>
+           <button>Search</button>
+            <form action="{{ url_for('logout') }}" method="POST">
+                <button type="submit">Logout</button>
+            </form>
         </div>
-    </div>
-
-    
-    
+    </div>   
 </body>
 </html>

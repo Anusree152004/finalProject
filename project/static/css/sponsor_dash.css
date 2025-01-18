@@ -160,4 +160,19 @@
         .search-button:hover {
             background-color: #002244; /* Even darker blue on hover */
         }
-   
+   /* Flash Messages */
+.flash-messages .alert {
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.flash-messages .alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.flash-messages .alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}

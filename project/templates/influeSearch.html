@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Influencers</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/influeSearch.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Search Influencers</h1>
+    </header>
+    <div class="container">
+        <!-- Search Buttons -->
+        <div class="search-buttons">
+            <button onclick="toggleSearch('filter')">Search by Filter</button>
+            <button onclick="toggleSearch('id')">Search by ID</button>
+        </div>
+
+        <!-- Search by Filter Section -->
+        <div id="filter-options" class="search-options">
+            <label for="category">Category:</label>
+            <select id="category" onchange="displayInfluencers()">
+                <option value="all">All</option>
+                <option value="tech">Tech</option>
+                <option value="fashion">Fashion</option>
+                <option value="fitness">Fitness</option>
+                <option value="beauty">Beauty</option>
+            </select>
+
+            <label for="followers">Followers:</label>
+            <input type="number" id="followers" placeholder="Min followers" onchange="displayInfluencers()">
+
+            <label for="reach">Reach:</label>
+            <input type="number" id="reach" placeholder="Min reach" onchange="displayInfluencers()">
+
+            <button class="search-button" onclick="searchByFilter()">Search</button>
+        </div>
+
+        <!-- Search by ID Section -->
+        <div id="id-options" class="search-options">
+            <label for="influencer-id">Influencer ID:</label>
+            <input type="text" id="influencer-id" placeholder="Enter Influencer ID">
+            <button class="search-button" onclick="searchById()">Search</button>
+        </div>
+
+        <!-- Influencers List -->
+        <div class="influencer-list" id="influencer-list">
+            {% for influencer, user, metrics in influencers %}
+                <div class="influencer-card">
+                    {% if user.profile_pic %}
+                    <img src="{{ url_for('static', filename=user.profile_pic) }}" alt="{{ user.name }}">
+                {% else %}
+                    <img src="{{ url_for('static', filename='images/default_profile.png') }}" alt="{{ user.name }}">
+                {% endif %}
+                    <h3>{{ user.name }}</h3>
+                    <p><strong>Category</strong> {{ influencer.category }}</p>
+                    <p><strong>Followers</strong> {{ metrics.followers }}</p>
+                    <p><strong>Reach</strong> {{ metrics.reach }}</p>
+                    <button class="view-profile-button">View Profile</button>
+                    <button class="request-button" onclick="sendRequest('{{ influencer.id }}')">Request</button>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        // Toggle between Search by Filter and Search by ID
+        function toggleSearch(type) {
+            if (type === 'filter') {
+                document.getElementById('filter-options').style.display = 'flex';
+                document.getElementById('id-options').style.display = 'none';
+            } else {
+                document.getElementById('id-options').style.display = 'flex';
+                document.getElementById('filter-options').style.display = 'none';
+            }
+        }
+
+         // Function to search influencers by filter
+         function searchByFilter() {
+            const category = document.getElementById('category').value;
+            const followers = document.getElementById('followers').value;
+            const reach = document.getElementById('reach').value;
+            const url = new URL(window.location.href);
+            url.searchParams.set('category', category);
+            url.searchParams.set('followers', followers);
+            url.searchParams.set('reach', reach);
+            window.location.href = url.toString();
+        }
+ // Display Influencers by Category and Filters
+ function displayInfluencers() {
+    const category = document.getElementById('category').value;
+    const minFollowers = document.getElementById('followers').value;
+    const minReach = document.getElementById('reach').value;
+
+    const filteredInfluencers = influencers.filter(influencer => {
+        return (category === 'all' || influencer.category === category) &&
+               (minFollowers === '' || influencer.followers >= minFollowers) &&
+               (minReach === '' || influencer.reach >= minReach);
+    });
+
+    const influencerList = document.getElementById('influencer-list');
+    influencerList.innerHTML = '';
+
+    if (filteredInfluencers.length === 0) {
+        influencerList.innerHTML = '<div class="no-results">No influencers found</div>';
+        return;
+    }
+
+ }
+// Send Request
+function sendRequest(influencerId) {
+    const influencer = influencers.find(influencer => influencer.id === influencerId);
+    if (influencer) {
+        const message = prompt(`Send a request to ${influencer.name}:`);
+        if (message) {
+            alert(`Request sent to ${influencer.name}: ${message}`);
+        }
+    }
+}
+
+
+        // Function to search influencers by ID
+        function searchById() {
+            const influencerId = document.getElementById('influencer-id').value;
+            const url = new URL(window.location.href);
+            url.searchParams.set('influencer-id', influencerId);
+            window.location.href = url.toString();
+        }
+        // Initialize Influencer Cards on Page Load
+        window.onload = function() {
+            toggleSearch('filter');  // Default to "Search by Filter"
+            displayInfluencers();
+        }
+
+    </script>
+</body>
+</html>

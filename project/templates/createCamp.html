@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Campaign</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/createCamp.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Create a New Campaign</h1>
+    </header>
+    <div class="container">
+        <!-- Campaign Form -->
+        <div class="campaign-header">
+            <h2>Create Campaign Details</h2>
+        </div>
+
+        <!-- Campaign Form -->
+        <div class="campaign-form">
+            <form method="POST" enctype="multipart/form-data" action="{{ url_for('sponsors.create_campaign') }}">
+               
+                <label for="title">Title:</label>
+                <input type="text" id="title" name="title" required>
+            
+                <label for="description">Description:</label>
+                <textarea id="description" name="description" required></textarea>
+            
+                <label for="budget">Budget:</label>
+                <input type="number" id="budget" name="budget" required>
+            
+                <label for="followers_range">Followers Range:</label>
+                <input type="text" id="followers_range" name="followers_range" required>
+            
+                <label for="start_date">Start Date:</label>
+                <input type="date" id="start_date" name="start_date" required>
+            
+                <label for="end_date">End Date:</label>
+                <input type="date" id="end_date" name="end_date" required>
+            
+                <label for="campaign_photo">Campaign Photo:</label>
+                <input type="file" id="campaign_photo" name="campaign_photo" accept="image/*">
+            
+                <button type="submit">Create Campaign</button>
+            </form>
+            
+            
+        </div>
+    </div>
+
+
+</body>
+</html>

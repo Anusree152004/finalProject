@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Campaign</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/updateCamp.css') }}">
+</head>
+<body>
+    <header>
+        
+        <h1>Update Campaign</h1> 
+    </header>
+    <div class="container">
+        <div class="container">
+             <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+        <!-- Update Campaign Form -->
+        <form action="{{ url_for('sponsors.update_campaign', campaign_id=campaign.campaign_id) }}" method="POST" enctype="multipart/form-data">
+          
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title" value="{{ campaign.title }}" required>
+
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" required>{{ campaign.description }}</textarea>
+
+            <label for="budget">Budget:</label>
+            <input type="number" id="budget" name="budget" value="{{ campaign.budget }}" required>
+
+            <label for="followers_range">Followers Range:</label>
+            <input type="text" id="followers_range" name="followers_range" value="{{ campaign.followers_range }}" required>
+
+            <label for="start_date">Start Date:</label>
+            <input type="date" id="start_date" name="start_date" value="{{ campaign.start_date.strftime('%Y-%m-%d') }}" required>
+
+            <label for="end_date">End Date:</label>
+            <input type="date" id="end_date" name="end_date" value="{{ campaign.end_date.strftime('%Y-%m-%d') }}" required>
+
+            <label for="campaign_photo">Campaign Photo:</label>
+            <input type="file" id="campaign_photo" name="campaign_photo" accept="image/*">
+
+            <button type="submit">Update Campaign</button>
+        </form>
+    </div>
+   
+</body>
+</html>

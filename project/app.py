@@ -1,22 +1,29 @@
 from flask import Flask,render_template,request,redirect,url_for,flash,session,Blueprint
 from models import db
-from models import User, Sponsor, Influencer, Campaign
+from models import User, Sponsor, Influencer, SocialMediaMetric
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from sponsors import sponsors_bp
 from influencers import influencers_bp
+from influencers import fetch_instagram_data
 from werkzeug.security import generate_password_hash, check_password_hash
+from utils import generate_breadcrumbs
+import os
 
 
-app = Flask(__name__)
+app = Flask(__name__,static_url_path='/static')
 
 
 
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///project.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# Set the UPLOAD_FOLDER in the main app config
+app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
+app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
 app.secret_key = '_protected_key'
+
 
 # Initialize the database
 
@@ -28,6 +35,8 @@ login_manager = LoginManager(app)
 login_manager.init_app(app)
 login_manager.login_view = 'login'  # Set default login view
 
+
+
 # Register blueprints
 app.register_blueprint(influencers_bp, url_prefix='/influencers')  # Register the influencers blueprint
 app.register_blueprint(sponsors_bp, url_prefix='/sponsors')  # Register the sponsors blueprint
@@ -35,9 +44,15 @@ app.register_blueprint(sponsors_bp, url_prefix='/sponsors')  # Register the spon
 # Create user loader for flask-login
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
 
+# Register the breadcrumb helper function
+@app.context_processor
+def utility_processor():
+    return dict(generate_breadcrumbs=generate_breadcrumbs)
+
+#**************************************************************************************************************#
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -95,6 +110,25 @@ def signup():
                 social_media_name=social_media_name
             )
             db.session.add(influencer)
+            
+
+# Fetch Instagram metrics for the influencer
+            instagram_data = fetch_instagram_data(username)  # Using the username as Instagram username
+            if instagram_data:
+                social_metrics = SocialMediaMetric(
+                    user_id=new_user.user_id,
+                    followers=instagram_data['followers'],
+                    likes=instagram_data['likes'],
+                    shares=instagram_data['shares'],
+                    comments=instagram_data['comments'],
+                    reach=instagram_data['reach'],
+                    engagement_rate=instagram_data['engagement_rate']
+                )
+                db.session.add(social_metrics)
+            else:
+                flash("Unable to fetch Instagram data. Please update your profile later.", "warning")
+
+            
 
         db.session.commit()  # Commit the sponsor or influencer
 
@@ -134,6 +168,12 @@ def login():
             flash('Login failed. Check username and/or password.', 'danger')
 
     return render_template('login.html')
+#**************************************************************************************************************#
+@app.route('/logout', methods=['POST'])
+def logout():
+    session.clear()  # Clears the session to log the user out
+    flash("You have successfully logged out.", "success")
+    return redirect(url_for('login'))  # Redirect to the login page
 #**************************************************************************************************************#
 
 @app.route('/')

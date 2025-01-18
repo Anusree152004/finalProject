@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Campaigns</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/campSearch.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Search Campaigns</h1>
+    </header>
+
+    <div class="container">
+        <!-- Search Section -->
+        <div class="search-section">
+            <label for="category">Filter by Category:</label>
+            <select id="category">
+                <option value="fashion">Fashion</option>
+                <option value="lifestyle">Food</option>
+                <option value="fitness">Fitness</option>
+                <option value="technology">Technology</option>
+                <!-- Add more categories as needed -->
+            </select>
+            <button onclick="searchCampaigns()">Search</button>
+        </div>
+
+        <!-- Campaign List Section -->
+        <div id="campaign-list" class="campaign-list">
+            {% if campaigns %}
+                {% for campaign in campaigns %}
+                    <div class="campaign-card">
+                        <h3>{{ campaign.title }}</h3>
+                        <p><strong>Description:</strong> {{ campaign.description }}</p>
+                        <p><strong>Budget:</strong> ${{ campaign.budget }}</p>
+                        <p><strong>Start Date:</strong> {{ campaign.start_date }}</p>
+                        <p><strong>End Date:</strong> {{ campaign.end_date }}</p>
+                        <button onclick="sendRequest('{{ campaign.campaign_id }}')">Request</button>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No campaigns found.</p>
+            {% endif %}
+        </div>
+        
+    </div>
+
+    <script>
+        // Dummy data for campaigns (this would be dynamically fetched from a backend in a real-world scenario)
+        const campaigns = [
+            { id: 1, title: "Summer Sale Launch", category: "fashion", description: "Huge discounts on summer fashion!", budget: "$5,000", influencer: "Sarah Lee", location: "Los Angeles" },
+            { id: 2, title: "Tech Gadgets Promotion", category: "technology", description: "Latest gadgets and accessories for tech enthusiasts.", budget: "$8,000", influencer: "Alex Kim", location: "San Francisco" },
+            { id: 3, title: "Fitness Gear Campaign", category: "fitness", description: "Promoting the best fitness gear for athletes.", budget: "$3,000", influencer: "John Doe", location: "New York" },
+            { id: 4, title: "Lifestyle Blog Collaboration", category: "lifestyle", description: "Collaborate with lifestyle influencers to promote healthy living.", budget: "$6,000", influencer: "Emily Rose", location: "Chicago" }
+        ];
+
+        // Function to display campaigns based on selected category
+        function searchCampaigns() {
+            const selectedCategory = document.getElementById('category').value;
+            const filteredCampaigns = campaigns.filter(campaign => campaign.category === selectedCategory);
+
+            const campaignList = document.getElementById('campaign-list');
+            campaignList.innerHTML = ''; // Clear previous results
+
+            if (filteredCampaigns.length > 0) {
+                filteredCampaigns.forEach(campaign => {
+                    const campaignItem = document.createElement('div');
+                    campaignItem.classList.add('campaign-item');
+                    campaignItem.innerHTML = `
+                        <h3>${campaign.title}</h3>
+                        <p><strong>Influencer:</strong> ${campaign.influencer}</p>
+                        <p><strong>Category:</strong> ${campaign.category}</p>
+                        <p><strong>Location:</strong> ${campaign.location}</p>
+                        <p><strong>Budget:</strong> ${campaign.budget}</p>
+                        <p><strong>Description:</strong> ${campaign.description}</p>
+                        <button class="view-profile-btn" onclick="viewProfile(${campaign.id})">View Profile</button>
+                        <button class="request-btn" onclick="toggleRequestArea(${campaign.id})">Request Collaboration</button>
+                        
+                        <div id="request-area-${campaign.id}" class="request-area">
+                            <textarea id="request-text-${campaign.id}" placeholder="Write your request here..."></textarea><br>
+                            <button onclick="sendRequest(${campaign.id})">Send Request</button>
+                        </div>
+                    `;
+                    campaignList.appendChild(campaignItem);
+                });
+            } else {
+                campaignList.innerHTML = "<p>No campaigns found in this category.</p>";
+            }
+        }
+
+        // Function to view influencer profile (for demo purposes)
+        function viewProfile(campaignId) {
+            const campaign = campaigns.find(c => c.id === campaignId);
+            alert(`Viewing profile for influencer: ${campaign.influencer}\n\nCategory: ${campaign.category}\nLocation: ${campaign.location}`);
+        }
+
+        // Function to toggle the visibility of the request area
+        function toggleRequestArea(campaignId) {
+            const requestArea = document.getElementById(`request-area-${campaignId}`);
+            const isVisible = requestArea.style.display === 'block';
+            requestArea.style.display = isVisible ? 'none' : 'block';
+        }
+
+        // Function to send collaboration request
+        function sendRequest(campaignId) {
+            const requestText = document.getElementById(`request-text-${campaignId}`).value;
+
+            if (requestText.trim() === '') {
+                alert("Please write your request before sending.");
+                return;
+            }
+
+            const campaign = campaigns.find(c => c.id === campaignId);
+            alert(`Collaboration request sent to ${campaign.influencer} for campaign: ${campaign.title}\n\nRequest: ${requestText}`);
+        }
+
+        // Initial search to load all campaigns
+        searchCampaigns();
+    </script>
+</body>
+</html>
