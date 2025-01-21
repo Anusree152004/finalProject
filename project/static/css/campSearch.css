@@ -12,13 +12,94 @@ header {
     text-align: center;
 }
 
+/* Container for the campaign list */
 .container {
-    margin: 20px auto;
-    max-width: 1200px;
-    background: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+/* Add the following styles to ensure the campaigns are displayed horizontally */
+
+/* Ensure that the entire campaign list container is a flexbox */
+.campaign-list {
+    display: flex;
+    flex-wrap: wrap; /* Allow the items to wrap to the next line if necessary */
+    justify-content: flex-start; /* Align items to the left */
+    gap: 20px; /* Space between each campaign card */
+    margin-top: 20px; /* Add some spacing between the heading and cards */
+}
+
+.campaign-card {
+    width: 250px; /* Set a fixed width for each campaign card */
+    border: 1px solid #ddd; /* Add a border around each card */
+    padding: 10px; /* Add padding inside each card */
+    border-radius: 8px; /* Round the corners */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Add shadow for better look */
+    text-align: center; /* Center the text */
+    background-color: #fff; /* Set a background color */
+    transition: transform 0.3s ease; /* Add transition effect */
+}
+
+.campaign-card:hover {
+    transform: translateY(-5px); /* Slightly lift the card on hover */
+}
+
+.campaign-card img {
+    max-width: 100%; /* Ensure the image does not overflow */
+    height: auto; /* Maintain the aspect ratio */
+    border-radius: 8px; /* Round the corners of the image */
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+h2 {
+    margin-top: 30px; /* Add space before headings */
+    font-size: 24px; /* Make headings larger */
+    font-weight: bold;
+}
+
+
+/* Campaign title */
+.campaign-card h3 {
+    font-size: 1.2em;
+    margin: 10px 0;
+}
+
+/* Campaign details */
+.campaign-card p {
+    font-size: 0.9em;
+    margin: 5px 0;
+    text-align: center;
+}
+
+/* Request button */
+.campaign-card button {
+    padding: 8px 16px;
+    margin-top: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.campaign-card button:hover {
+    background-color: #0056b3;
 }
 
 .search-section {
@@ -42,12 +123,6 @@ header {
 
 .search-section button:hover {
     background-color: #002244;
-}
-
-.campaign-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
 }
 
 .campaign-item {

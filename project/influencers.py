@@ -1,11 +1,13 @@
 from flask import Blueprint, render_template,redirect,url_for,flash,jsonify,request,current_app
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
-from models import db,User,Influencer,SocialMediaMetric,Campaign,CampaignRequest,Sponsor
+from models import db,User,Influencer,SocialMediaMetric,Campaign,CampaignRequest,Sponsor,Post,CampaignPhoto
 import instaloader
 from statistics import mean
 from datetime import datetime
 import os
+import re
+from sqlalchemy import func
 
 # Create a Blueprint for influencers
 influencers_bp = Blueprint('influencers', __name__)
@@ -194,33 +196,131 @@ def update_influencer_profile():
     return render_template('update_influe_profile.html', user=user, influencer=influencer)
 
 #**************************************************************************************************************#
+# Helper function to convert followers range to numerical values
+def parse_followers_range(followers_range):
+    match = re.match(r'(\d+)([kK]?)\s*-\s*(\d+)([kK]?)', followers_range)
+    if match:
+        min_followers = int(match.group(1)) * (1000 if match.group(2).lower() == 'k' else 1)
+        max_followers = int(match.group(3)) * (1000 if match.group(4).lower() == 'k' else 1)
+        return min_followers, max_followers
 
-# Route for displaying the campaign search form and initial campaigns
+    match = re.match(r'(\d+)([kK]?)', followers_range)
+    if match:
+        min_followers = int(match.group(1)) * (1000 if match.group(2).lower() == 'k' else 1)
+        return min_followers, None
+
+    return None, None
+
+# Helper function to determine if the followers count is within the range
+def is_followers_count_in_range(followers_count, followers_range):
+    min_followers, max_followers = parse_followers_range(followers_range)
+    if min_followers is not None:
+        if max_followers is not None:
+            return min_followers <= followers_count <= max_followers
+        return followers_count >= min_followers
+    return False
+
+# Route for displaying the campaign search form and initial recommended campaigns
 @influencers_bp.route('/search_campaigns', methods=['GET'])
 @login_required
 def search_campaigns():
     influencer = Influencer.query.filter_by(user_id=current_user.user_id).first()
     if not influencer:
         flash("Influencer not found.", "danger")
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('influencers.dashboard'))
 
-    # Fetch campaigns based on the sponsor's category
-    campaigns = db.session.query(Campaign).join(Sponsor).filter(Sponsor.category == influencer.category).order_by(Campaign.views.desc()).all()
+    # Get the category from the query string (either 'all' or a specific category)
+    category = request.args.get('category', 'all')  # Default to 'all' if no category is selected
 
-    return render_template('campSearch.html', campaigns=campaigns)
+    # Fetch the social media metric for the influencer
+    social_media_metric = SocialMediaMetric.query.filter_by(user_id=current_user.user_id).first()
+    if not social_media_metric:
+        flash("Social media metrics not found.", "danger")
+        return redirect(url_for('influencers.dashboard'))
+
+    followers_count = social_media_metric.followers
+    print(f"Followers count: {followers_count}")
+
+    all_campaigns = Campaign.query.all()
+
+
+    # Query campaigns based on the selected category and sponsor's category
+    if category != 'all':
+        campaigns = db.session.query(Campaign).join(Sponsor).filter(
+            func.lower(Sponsor.category) == category.lower(),  # Match sponsor's category with selected category
+            Campaign.sponsor_id == Sponsor.sponsor_id  # Ensure sponsor_id links correctly
+        ).all()
+    else:
+        campaigns = db.session.query(Campaign).join(Sponsor).all()
+
+    # Recommended campaigns: Filter based on influencer's category and followers count
+    recommended_campaigns = [
+        campaign for campaign in all_campaigns
+        if campaign.followers_range and is_followers_count_in_range(followers_count, campaign.followers_range)
+    ]
+    print(f"Recommended campaigns: {len(recommended_campaigns)}")
+
+    # Fetch the first image for each campaign
+    for campaign in all_campaigns:
+        campaign.image_url = None
+        if campaign.campaign_photo:
+            first_photo = campaign.campaign_photo[0]
+            if first_photo and first_photo.file_path:  # Ensure file_path is valid
+                filename = first_photo.file_path.split('uploads/campaign_photo/')[-1]
+                campaign.image_url = url_for('static', filename=f'uploads/campaign_photo/{filename}')
+                print(f"Image URL for campaign {campaign.campaign_id}: {campaign.image_url}")
+
+    # Return the template with recommended and all campaigns
+    return render_template('campSearch.html', 
+                           recommended_campaigns=recommended_campaigns,  # Recommended campaigns based on followers range
+                           all_campaigns=campaigns,  # All campaigns, filtered by category if applicable
+                           category=category)  # Pass selected category to template
+   
+#**************************************************************************************************************#
+#view profiles of sponsors
+@influencers_bp.route('/sponsor_profile/<int:sponsor_id>')
+def sponsor_profile(sponsor_id):
+    sponsor = Sponsor.query.get(sponsor_id)
+    if not sponsor:
+        return "Sponsor not found", 404
+
+    # Fetch campaigns related to the sponsor
+    campaigns = Campaign.query.filter_by(sponsor_id=sponsor_id).all()
+
+    # Fetch sponsor's profile picture or use a default
+    profile_pic = sponsor.user.profile_pic.replace('uploads/profile_pics/', '') if sponsor.user.profile_pic else 'default_profile.jpg'
+
+    # Create a dictionary of campaign_id to campaign photo path or a default
+    campaign_photos = {
+    campaign.campaign_id: cp.file_path.replace('uploads/campaign_photo/', '') if cp else 'default_campaign.jpg'
+    for campaign in campaigns
+    for cp in [CampaignPhoto.query.filter_by(campaign_id=campaign.campaign_id).first()]
+}
+
+    return render_template(
+        'sponsor_profile.html',
+        sponsor=sponsor,
+        campaigns=campaigns,
+        profile_pic=profile_pic,
+        campaign_photos=campaign_photos
+    )
 
 #**************************************************************************************************************#
-# Route for handling the search and displaying results
-@influencers_bp.route('/search_campaign_results', methods=['GET'])
-@login_required
-def search_campaign_results():
-    category = request.args.get('category')
+# #request to join a campaign
+# @influencers_bp.route('/request_campaign/<int:campaign_id>', methods=['POST'])
+# def request_campaign(campaign_id):
+#     campaign = Campaign.query.get_or_404(campaign_id)
+    
+#     # Check if the influencer has already requested this campaign
+#     existing_request = CampaignRequest.query.filter_by(influencer_id=current_user.id, campaign_id=campaign_id).first()
+#     if existing_request:
+#         flash('You have already requested this campaign.', 'danger')
+#         return redirect(url_for('influencers.dashboard'))
 
-    # Fetch campaigns matching the search criteria
-    query = db.session.query(Campaign).join(Sponsor)
-    if category:
-        query = query.filter(Sponsor.category.ilike(f'%{category}%'))
-
-    campaigns = query.all()
-
-    return render_template('campSearch.html', campaigns=campaigns)
+#     # Create a new request
+#     request = CampaignRequest(influencer_id=current_user.id, campaign_id=campaign_id)
+#     db.session.add(request)
+#     db.session.commit()
+    
+#     flash('Request sent successfully!', 'success')
+#     return redirect(url_for('influencers.dashboard'))

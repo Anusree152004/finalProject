@@ -1,0 +1,169 @@
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+header {
+    background-color: #003366;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+}
+
+.container {
+    margin: 20px auto;
+    max-width: 1000px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.profile-header img {
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    margin-right: 20px;
+}
+
+.profile-header h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.form-group input, .form-group textarea, .form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.post-card, .campaign-card {
+    background: #f9f9f9;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.post-card .analysis {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.post-card .analysis div {
+    font-size: 14px;
+    color: #555;
+}
+
+.post-card .analysis div span {
+    font-weight: bold;
+}
+/* Container for Campaign Cards */
+.campaign-cards-container {
+    display: flex; /* Enable Flexbox */
+    flex-wrap: wrap; /* Allow cards to wrap to the next line if necessary */
+    justify-content: space-between; /* Distribute cards evenly with space between */
+    gap: 20px; /* Add space between cards */
+    padding: 20px;
+}
+/* Campaign Card */
+.campaign-card {
+    width: 250px; /* Set a fixed width for each campaign card */
+    border: 1px solid #ddd; /* Add a border around each card */
+    padding: 10px; /* Add padding inside each card */
+    border-radius: 8px; /* Round the corners */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Add shadow for better look */
+    text-align: center; /* Center the text */
+    background-color: #fff; /* Set a background color */
+    transition: transform 0.3s ease; /* Add transition effect */
+    margin: 10px; /* Add some margin around the card */
+}
+/* Hover effect to lift the card */
+.campaign-card:hover {
+    transform: translateY(-5px); /* Lift the card slightly */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Enhance shadow on hover */
+}
+
+/* Campaign Image */
+.campaign-card img {
+    width: 100%; /* Make the image fill the width of the card */
+    height: 150px; /* Set a fixed height for the image */
+    object-fit: cover; /* Ensure the image covers the area without distortion */
+    border-radius: 5px; /* Slightly round the corners of the image */
+    margin-bottom: 10px; /* Add space between the image and text */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .campaign-card {
+        width: 45%; /* Adjust width for tablet size */
+    }
+}
+
+@media (max-width: 480px) {
+    .campaign-card {
+        width: 90%; /* Make the card full-width on mobile */
+    }
+}
+/* Request Button */
+.campaign-card button {
+    padding: 10px 20px;
+    background-color: #003366;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.campaign-card button:hover {
+    background-color: #002244;
+}
+
+
+.back-button {
+    padding: 12px 25px;
+    background-color: #aaa;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: center;
+    display: block;
+    margin-top: 20px;
+}
+
+.back-button:hover {
+    background-color: #888;
+}
+.profile-header img {
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    margin-right: 20px;
+}

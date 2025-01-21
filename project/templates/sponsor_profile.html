@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sponsor Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sponsorsProfile.css') }}">
+</head>
+<body>
+
+    <header>
+        <h1>Sponsor Profile</h1>
+    </header>
+
+    <div class="container">
+       
+ 
+        <!-- Sponsor Profile Header -->
+        <div class="profile-header">
+            <img src="{{ url_for('static', filename='uploads/profile_pics/' + profile_pic) }}" alt="Sponsor Profile Picture">
+
+            <div>
+                <h2>{{ sponsor.user.name }}</h2>
+                <p><strong>Email:</strong> {{ sponsor.user.email }}</p>
+                <p><strong>Category:</strong>{{ sponsor.category }}</p>
+                <p><strong>Location:</strong>{{ sponsor.location }}</p>
+                <p><strong>Bio:</strong> {{ sponsor.user.bio }}</p>
+            </div>
+        </div>
+
+        <!-- Sponsor Posts with Analysis -->
+        <h3>Recent Posts & Collaboration Analysis</h3>
+
+        <div class="post-card">
+            <h4>Post Title 1</h4>
+            <p>Post description goes here...</p>
+            <small>Posted on: 01/01/2024</small>
+            <div class="analysis">
+                <div>
+                    <span>Reach:</span> 10,000
+                </div>
+                <div>
+                    <span>Likes:</span> 5,000
+                </div>
+                <div>
+                    <span>Comments:</span> 200
+                </div>
+                <div>
+                    <span>Engagement Rate:</span> 50%
+                </div>
+            </div>
+        </div>
+
+        
+
+       <!-- Available Campaigns -->
+       <h3>Available Campaigns</h3>
+       <div class="campaign-cards-container">
+       {% for campaign in campaigns %}
+    <div class="campaign-card">
+        <img src="{{ url_for('static', filename='uploads/campaign_photo/' + campaign_photos.get(campaign.campaign_id)) }}" alt="Campaign Photo">
+        <h4>{{ campaign.title }}</h4>
+        <p><strong>Description:</strong> {{ campaign.description }}</p>
+        <p><strong>Budget:</strong> ${{ campaign.budget }}</p>
+        <p><strong>Start Date:</strong> {{ campaign.start_date }}</p>
+        <p><strong>End Date:</strong> {{ campaign.end_date }}</p>
+        <p><strong>Minimum Followers:</strong> {{ campaign.followers_range }}</p>
+        <button onclick="showRequestPopup({{ campaign.campaign_id }})">Request</button>
+    </div>
+{% endfor %}
+</div>
+
+      
+<!-- Request Form Popup -->
+<div id="request-popup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background-color:white; padding:20px; border-radius:5px; box-shadow:0 2px 10px rgba(0,0,0,0.1);">
+    <h4>Send Request</h4>
+    <textarea id="request-text" rows="4" placeholder="Write your request here..."></textarea><br><br>
+    <button onclick="sendRequest()">Send Request</button>
+    <button onclick="closeRequestPopup()">Close</button>
+</div>
+</div>
+
+<script>
+function showRequestPopup(campaignId) {
+    document.getElementById('request-popup').style.display = 'block';
+}
+
+function closeRequestPopup() {
+    document.getElementById('request-popup').style.display = 'none';
+}
+
+function sendRequest() {
+    const requestText = document.getElementById('request-text').value;
+    alert("Request Sent: " + requestText); // Replace with AJAX or form submission
+    closeRequestPopup();
+}
+</script>
+</body>
+</html>

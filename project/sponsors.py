@@ -3,7 +3,7 @@ from werkzeug.utils import secure_filename
 import os
 from datetime import datetime
 from flask_login import login_required, current_user
-from models import db, User,Sponsor, Campaign, CampaignPhoto,Influencer,SocialMediaMetric
+from models import db, User,Sponsor, Campaign, CampaignPhoto,Influencer,SocialMediaMetric,CampaignRequest
 
 # Create a Blueprint for sponsors
 sponsors_bp = Blueprint('sponsors', __name__)
@@ -70,6 +70,7 @@ def update_profile():
 
     return render_template('update_profile.html', user=user, sponsor=sponsor)
 #************************************************************************************************************#
+# Route for creating a campaign
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
@@ -87,7 +88,7 @@ def create_campaign():
             start_date = request.form.get('start_date')
             end_date = request.form.get('end_date')
             campaign_photo = request.files.get('campaign_photo')
-            
+
             # Debugging: Print form data
             print(f"Form Data: title={title}, description={description}, budget={budget}, followers_range={followers_range}, start_date={start_date}, end_date={end_date}, campaign_photo={campaign_photo}")
 
@@ -109,8 +110,12 @@ def create_campaign():
                 image_filename = os.path.join(uploads_dir, filename)
                 campaign_photo.save(image_filename)
                 
-            
-            # Create new campaign
+            # Get sponsor info (ensure the current user is a sponsor)
+            sponsor = Sponsor.query.filter_by(user_id=current_user.user_id).first()
+            if not sponsor:
+                raise ValueError("No sponsor found for the current user.")
+
+            # Create new campaign with correct sponsor_id
             new_campaign = Campaign(
                 title=title,
                 description=description,
@@ -118,7 +123,7 @@ def create_campaign():
                 followers_range=followers_range,
                 start_date=start_date,
                 end_date=end_date,
-                sponsor_id=current_user.user_id
+                sponsor_id=sponsor.sponsor_id  # Use sponsor.sponsor_id instead of current_user.user_id
             )
 
             db.session.add(new_campaign)
@@ -149,8 +154,14 @@ def create_campaign():
 @sponsors_bp.route('/view_campaigns')
 @login_required  # Ensure the user is logged in
 def view_campaigns():
+    # Get the sponsor info
+    sponsor = Sponsor.query.filter_by(user_id=current_user.user_id).first()
+    if not sponsor:
+        flash("No sponsor found for the current user.", "danger")
+        return redirect(url_for('sponsors.create_campaign'))
+
     # Get all campaigns created by the current sponsor
-    campaigns = Campaign.query.filter_by(sponsor_id=current_user.user_id).all()
+    campaigns = Campaign.query.filter_by(sponsor_id=sponsor.sponsor_id).all()
 
     return render_template('viewCamp.html', campaigns=campaigns)
 
@@ -160,7 +171,7 @@ def view_campaigns():
 @login_required
 def update_campaign(campaign_id):
     campaign = Campaign.query.get_or_404(campaign_id)
-    if campaign.sponsor_id != current_user.user_id:
+    if campaign.sponsor_id != current_user.sponsor.sponsor_id:
         flash("You are not authorized to update this campaign.", "danger")
         return redirect(url_for('sponsors.view_campaigns'))
 
@@ -219,7 +230,7 @@ def update_campaign(campaign_id):
 @login_required
 def delete_campaign(campaign_id):
     campaign = Campaign.query.get_or_404(campaign_id)
-    if campaign.sponsor_id != current_user.user_id:
+    if campaign.sponsor_id != current_user.sponsor.sponsor_id:
         flash("You are not authorized to delete this campaign.", "danger")
         return redirect(url_for('sponsors.view_campaigns'))
 
@@ -236,7 +247,7 @@ def delete_campaign(campaign_id):
         print(f"Exception: {e}")
 
     return redirect(url_for('sponsors.view_campaigns'))
-
+#************************************************************************************************************#
 
 # Route for displaying influencers based on sponsor's category
 @sponsors_bp.route('/influe_search', methods=['GET'])
@@ -251,3 +262,36 @@ def influe_search():
     influencers = db.session.query(Influencer, User, SocialMediaMetric).join(User, Influencer.user_id == User.user_id).join(SocialMediaMetric, User.user_id == SocialMediaMetric.user_id).filter(Influencer.category == sponsor.category).order_by(SocialMediaMetric.reach.desc()).all()
 
     return render_template('influeSearch.html', sponsor=sponsor, influencers=influencers)
+#************************************************************************************************************#
+# #route for view campaign requests
+# @sponsors_bp.route('/view_campaign_requests/<int:campaign_id>')
+# def view_campaign_requests(campaign_id):
+#     campaign = Campaign.query.get_or_404(campaign_id)
+    
+#     # Get all requests for this campaign
+#     requests = CampaignRequest.query.filter_by(campaign_id=campaign_id, status='pending').all()
+
+#     return render_template('view_campaign_requests.html', campaign=campaign, requests=requests)
+# #************************************************************************************************************#
+# # Route for accepting or rejecting a campaign request
+# @sponsors_bp.route('/update_request_status/<int:request_id>', methods=['POST'])
+# def update_request_status(request_id):
+#     request = CampaignRequest.query.get_or_404(request_id)
+    
+#     # Check if the current user is the sponsor of the campaign
+#     if request.campaign.sponsor_id != current_user.id:
+#         flash('You are not authorized to manage this request.', 'danger')
+#         return redirect(url_for('sponsors.dashboard'))
+
+#     # Update the request status
+#     action = request.form.get('action')
+#     if action == 'accept':
+#         request.status = 'accepted'
+#     elif action == 'reject':
+#         request.status = 'rejected'
+
+#     db.session.commit()
+    
+#     flash(f'Request has been {request.status}.', 'success')
+#     return redirect(url_for('sponsors.view_campaign_requests', campaign_id=request.campaign_id))
+#************************************************************************************************************#

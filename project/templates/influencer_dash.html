@@ -332,7 +332,7 @@
         <div class="nav-buttons">
             <button onclick="viewCampaigns()">Campaign</button>
             <button onclick="viewRequests()">Requests</button>
-           <button>Search</button>
+            <button onclick="window.location.href='{{ url_for('influencers.search_campaigns') }}'">Search</button>
             <form action="{{ url_for('logout') }}" method="POST">
                 <button type="submit">Logout</button>
             </form>
