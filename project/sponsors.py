@@ -4,7 +4,7 @@ import os
 from datetime import datetime
 from flask_login import login_required, current_user
 from models import db, User,Sponsor, Campaign, CampaignPhoto,Influencer,SocialMediaMetric,CampaignRequest
-
+from models import StatusEnum
 # Create a Blueprint for sponsors
 sponsors_bp = Blueprint('sponsors', __name__)
 
@@ -150,20 +150,64 @@ def create_campaign():
     return render_template('createCamp.html')  # Render the form for GET requests
 
 #************************************************************************************************************#
-# Route for viewing all campaigns
 @sponsors_bp.route('/view_campaigns')
-@login_required  # Ensure the user is logged in
+@login_required
 def view_campaigns():
-    # Get the sponsor info
-    sponsor = Sponsor.query.filter_by(user_id=current_user.user_id).first()
-    if not sponsor:
-        flash("No sponsor found for the current user.", "danger")
-        return redirect(url_for('sponsors.create_campaign'))
+    sponsor_id = current_user.sponsor.sponsor_id  # Assuming current_user is a sponsor
+    
+    # Fetch all campaigns created by the sponsor
+    campaigns = Campaign.query.filter_by(sponsor_id=sponsor_id).all()
 
-    # Get all campaigns created by the current sponsor
-    campaigns = Campaign.query.filter_by(sponsor_id=sponsor.sponsor_id).all()
+    # Fetch all requests for each campaign
+    campaign_data = []
+    for campaign in campaigns:
+        # Fetch requests related to this campaign
+        requests = CampaignRequest.query.filter_by(campaign_id=campaign.campaign_id).all()
+        for request in requests:
+            print(f"Request ID: {request.request_id}, Status: {request.status}")  # Debugging line
+        campaign_data.append({
+            'campaign': campaign,
+            'requests': requests
+        })
+    
+    # Pass campaign_data to the template as 'campaigns'
+    return render_template('viewCamp.html', campaigns=campaign_data)
 
-    return render_template('viewCamp.html', campaigns=campaigns)
+# Accept a request
+@sponsors_bp.route('/accept_request/<int:request_id>', methods=['POST'])
+@login_required
+def accept_request(request_id):
+    # Fetch the campaign request
+    campaign_request = CampaignRequest.query.get_or_404(request_id)
+
+    # Verify that the logged-in user is the sponsor of the campaign
+    if campaign_request.campaign.sponsor_id == current_user.sponsor.sponsor_id:
+        campaign_request.status = 'ACCEPTED'
+        db.session.commit()
+        flash('Request accepted!', 'success')
+    else:
+        flash('You do not have permission to accept this request.', 'danger')
+    
+    # Redirect back to the campaigns page
+    return redirect(url_for('sponsors.view_campaigns'))
+
+# Reject a request
+@sponsors_bp.route('/reject_request/<int:request_id>', methods=['POST'])
+@login_required
+def reject_request(request_id):
+    # Fetch the campaign request
+    campaign_request = CampaignRequest.query.get_or_404(request_id)
+
+    # Verify that the logged-in user is the sponsor of the campaign
+    if campaign_request.campaign.sponsor_id == current_user.sponsor.sponsor_id:
+        campaign_request.status = 'REJECTED'
+        db.session.commit()
+        flash('Request rejected!', 'danger')
+    else:
+        flash('You do not have permission to reject this request.', 'danger')
+    
+    # Redirect back to the campaigns page
+    return redirect(url_for('sponsors.view_campaigns'))
 
 #************************************************************************************************************#
 # Route for updating a campaign
@@ -262,36 +306,4 @@ def influe_search():
     influencers = db.session.query(Influencer, User, SocialMediaMetric).join(User, Influencer.user_id == User.user_id).join(SocialMediaMetric, User.user_id == SocialMediaMetric.user_id).filter(Influencer.category == sponsor.category).order_by(SocialMediaMetric.reach.desc()).all()
 
     return render_template('influeSearch.html', sponsor=sponsor, influencers=influencers)
-#************************************************************************************************************#
-# #route for view campaign requests
-# @sponsors_bp.route('/view_campaign_requests/<int:campaign_id>')
-# def view_campaign_requests(campaign_id):
-#     campaign = Campaign.query.get_or_404(campaign_id)
-    
-#     # Get all requests for this campaign
-#     requests = CampaignRequest.query.filter_by(campaign_id=campaign_id, status='pending').all()
-
-#     return render_template('view_campaign_requests.html', campaign=campaign, requests=requests)
-# #************************************************************************************************************#
-# # Route for accepting or rejecting a campaign request
-# @sponsors_bp.route('/update_request_status/<int:request_id>', methods=['POST'])
-# def update_request_status(request_id):
-#     request = CampaignRequest.query.get_or_404(request_id)
-    
-#     # Check if the current user is the sponsor of the campaign
-#     if request.campaign.sponsor_id != current_user.id:
-#         flash('You are not authorized to manage this request.', 'danger')
-#         return redirect(url_for('sponsors.dashboard'))
-
-#     # Update the request status
-#     action = request.form.get('action')
-#     if action == 'accept':
-#         request.status = 'accepted'
-#     elif action == 'reject':
-#         request.status = 'rejected'
-
-#     db.session.commit()
-    
-#     flash(f'Request has been {request.status}.', 'success')
-#     return redirect(url_for('sponsors.view_campaign_requests', campaign_id=request.campaign_id))
 #************************************************************************************************************#

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campaign Requests - Influencer Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/campInflue.css') }}">
+</head>
+<body>
+    
+
+    <header>
+        <h1>Your Campaign Requests</h1>
+    </header>
+    
+    <div class="container">
+        <!-- Requests Section -->
+        <div class="requests-section">
+            <h2>Your Sent Requests</h2>
+            {% if requests %}
+                {% for request in requests %}
+                    <div class="request-card">
+                        <div class="status-tag {% if request.status == 'pending' %}status-pending{% elif request.status == 'accepted' %}status-accepted{% elif request.status == 'rejected' %}status-rejected{% endif %}">
+                            {{ request.status.capitalize() }}
+                        </div>
+                        <h3>Campaign: {{ request.campaign.title }}</h3>
+                        <p><strong>Description:</strong> {{ request.campaign.description }}</p>
+                        <p><strong>Your Message:</strong> {{ request.request_description }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No requests sent yet.</p>
+            {% endif %}
+        </div>
+        
+
+</body>
+</html>

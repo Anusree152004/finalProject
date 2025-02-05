@@ -330,13 +330,14 @@
 </div>
        <!-- Navigation Buttons -->
         <div class="nav-buttons">
-            <button onclick="viewCampaigns()">Campaign</button>
+            <button onclick="window.location.href='{{ url_for('influencers.campaign_influe') }}'">Campaigns</button>
             <button onclick="viewRequests()">Requests</button>
             <button onclick="window.location.href='{{ url_for('influencers.search_campaigns') }}'">Search</button>
             <form action="{{ url_for('logout') }}" method="POST">
                 <button type="submit">Logout</button>
             </form>
         </div>
-    </div>   
+    </div>  
+    
 </body>
 </html>

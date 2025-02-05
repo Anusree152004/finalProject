@@ -17,6 +17,8 @@
             color: red;
             font-weight: bold;
         }
+        
+        
         .button-link {
             display: inline-block;
             padding: 10px 20px;
@@ -29,6 +31,7 @@
         .button-link:hover {
             background-color: #002244; /* Darker blue on hover */
         }
+        
     </style>
     <script>
         function toggleDetails(id) {
@@ -80,6 +83,53 @@
         }
 
         document.addEventListener('DOMContentLoaded', checkEndDates);
+        
+        function acceptRequest(requestId) {
+            // Send an AJAX request to accept the request
+            fetch(`/accept_request/${requestId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: 'ACCEPTED' })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Request accepted!");
+                    location.reload();  // Reload the page to reflect the status change
+                } else {
+                    alert("Failed to accept the request.");
+                }
+            });
+        }
+        
+        function rejectRequest(requestId) {
+            // Send an AJAX request to reject the request
+            fetch(`/reject_request/${requestId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: 'REJECTED' })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Request rejected!");
+                    location.reload();  // Reload the page to reflect the status change
+                } else {
+                    alert("Failed to reject the request.");
+                }
+            });
+        }
+       
+            document.querySelectorAll("form").forEach(form => {
+                form.addEventListener("submit", function(event) {
+                    // Debugging log: Confirm form submission
+                    console.log('Form submitted', form);
+                });
+            });
+        
+        
     </script>
 </head>
 <body>
@@ -99,52 +149,72 @@
      </div>
  {% endif %}
 {% endwith %}
- <div class="container">
-    <div class="container">
-        <!-- Campaign Section -->
-        {% for campaign in campaigns %}
-        <div class="campaign-section" data-end-date="{{ campaign.end_date.strftime('%Y-%m-%d') }}">
-            <!-- Campaign Header -->
-            <div class="campaign-header">
-                <h2>{{ campaign.title }}</h2>
-                <div class="campaign-buttons">
-                    
-                    <a href="{{ url_for('sponsors.update_campaign', campaign_id=campaign.campaign_id) }}" class="button-link">Update Campaign</a>
-                    <button onclick="deleteCampaign('{{ campaign.campaign_id }}')">Delete Campaign</button>
-                </div>
-            </div>
 
-            <!-- View Campaign Details Button -->
-            <button onclick="toggleDetails('campaign-details-{{ campaign.campaign_id }}')" class="view-details-btn">View Campaign Details</button>
-            
-            <!-- Campaign Details (Initially hidden) -->
-            <div id="campaign-details-{{ campaign.campaign_id }}" class="hidden-details campaign-details">
-                {% for photo in campaign.campaign_photo %}
-                <img src="{{ url_for('static', filename=photo.file_path)}}" alt="Campaign Photo">
-                {% endfor %}
-                <p><strong>Description:</strong> {{ campaign.description }}</p>
-                <p><strong>Budget:</strong> {{ campaign.budget }}</p>
-                <p><strong>Followers Range:</strong> {{ campaign.followers_range }}</p>
-                <p><strong>Start Date:</strong> {{ campaign.start_date.strftime('%Y-%m-%d') }}</p>
-                <p><strong>End Date:</strong> {{ campaign.end_date.strftime('%Y-%m-%d') }}</p>
+<div class="container">
+    {% for campaign_data in campaigns %}
+    <div class="campaign-section" data-end-date="{{ campaign_data.campaign.end_date.strftime('%Y-%m-%d') }}">
+        <!-- Campaign Header -->
+        <div class="campaign-header">
+            <h2>{{ campaign_data.campaign.title }}</h2>
+            <div class="campaign-buttons">
+                <a href="{{ url_for('sponsors.update_campaign', campaign_id=campaign_data.campaign.campaign_id) }}" class="button-link">Update Campaign</a>
+                <button onclick="deleteCampaign('{{ campaign_data.campaign.campaign_id }}')">Delete Campaign</button>
             </div>
         </div>
-        {% endfor %}
-   
+
+        <!-- View Campaign Details Button -->
+        <button onclick="toggleDetails('campaign-details-{{ campaign_data.campaign.campaign_id }}')" class="view-details-btn">View Campaign Details</button>
+
+        <!-- Campaign Details (Initially hidden) -->
+        <div id="campaign-details-{{ campaign_data.campaign.campaign_id }}" class="hidden-details campaign-details">
+            {% for photo in campaign_data.campaign.campaign_photo %}
+                <img src="{{ url_for('static', filename=photo.file_path)}}" alt="Campaign Photo">
+            {% endfor %}
+            <p><strong>Description:</strong> {{ campaign_data.campaign.description }}</p>
+            <p><strong>Budget:</strong> {{ campaign_data.campaign.budget }}</p>
+            <p><strong>Followers Range:</strong> {{ campaign_data.campaign.followers_range }}</p>
+            <p><strong>Start Date:</strong> {{ campaign_data.campaign.start_date.strftime('%Y-%m-%d') }}</p>
+            <p><strong>End Date:</strong> {{ campaign_data.campaign.end_date.strftime('%Y-%m-%d') }}</p>
+        </div>
+
+        <!-- View Requests Button -->
+        <button onclick="toggleDetails('requests-details-{{ campaign_data.campaign.campaign_id }}')" class="view-details-btn">View Requests</button>
+
+       <!-- Requests Section -->
+       <div id="requests-details-{{ campaign_data.campaign.campaign_id }}" class="hidden-details">
+             <!-- Requests Section -->
+        <div class="requests-section">
+            <h3>Requests for this Campaign</h3>
+            {% if campaign_data.requests %}
+                <ul>
+                    {% for request in campaign_data.requests %}
+                        <li>
+                            <p><strong>Influencer:</strong> {{ request.influencer.user.name }}</p>
+                            <p><strong>Request Description:</strong> {{ request.request_description }}</p>
+                            <p>Status: {{ request.status.value | upper }}</p>
+
+                            <div class="button-container">          
+            <form action="{{ url_for('sponsors.accept_request', request_id=request.request_id) }}" method="POST">
+                <button type="submit" class="accept-btn">Accept</button>
+            </form>
+            <form action="{{ url_for('sponsors.reject_request', request_id=request.request_id) }}" method="POST">
+                <button type="submit" class="reject-btn">Reject</button>
+            </form>
+            <form action="" method="GET">
+                <button type="submit" class="view-profile-btn">View Profile</button>
+            </form>
+                        </div>   
+
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No requests yet.</p>
+            {% endif %}
+        </div>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const flashMessages = document.querySelector('.flash-messages');
-            if (flashMessages) {
-                setTimeout(() => {
-                    flashMessages.style.transition = 'opacity 1s';
-                    flashMessages.style.opacity = '0';
-                    setTimeout(() => {
-                        flashMessages.remove();
-                    }, 1000);
-                }, 3000); // Display for 3 seconds
-            }
-        });
-    </script>
+{% endfor %}
+</div>
+</div>
 </body>
 </html>

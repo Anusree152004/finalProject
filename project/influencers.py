@@ -306,21 +306,45 @@ def sponsor_profile(sponsor_id):
     )
 
 #**************************************************************************************************************#
-# #request to join a campaign
-# @influencers_bp.route('/request_campaign/<int:campaign_id>', methods=['POST'])
-# def request_campaign(campaign_id):
-#     campaign = Campaign.query.get_or_404(campaign_id)
-    
-#     # Check if the influencer has already requested this campaign
-#     existing_request = CampaignRequest.query.filter_by(influencer_id=current_user.id, campaign_id=campaign_id).first()
-#     if existing_request:
-#         flash('You have already requested this campaign.', 'danger')
-#         return redirect(url_for('influencers.dashboard'))
+@influencers_bp.route('/send_request/<int:campaign_id>', methods=['POST'])
+@login_required
+def send_request(campaign_id):
+    influencer_id = current_user.influencer.influencer_id
+    request_description = request.form.get('request_description')
 
-#     # Create a new request
-#     request = CampaignRequest(influencer_id=current_user.id, campaign_id=campaign_id)
-#     db.session.add(request)
-#     db.session.commit()
-    
-#     flash('Request sent successfully!', 'success')
-#     return redirect(url_for('influencers.dashboard'))
+    # Check if the influencer has already sent a request for this campaign
+    existing_request = CampaignRequest.query.filter_by(
+        influencer_id=influencer_id, campaign_id=campaign_id).first()
+
+    if existing_request:
+        flash('You have already sent a request for this campaign.', 'warning')
+        return redirect(url_for('influencers.campaign_influe'))
+
+    # Create a new CampaignRequest
+    new_request = CampaignRequest(
+        campaign_id=campaign_id,
+        influencer_id=influencer_id,
+        sponsor_id=Campaign.query.get(campaign_id).sponsor_id,
+        request_description=request_description,
+        status='PENDING'
+    )
+    db.session.add(new_request)
+    db.session.commit()
+
+    flash('Request sent successfully!', 'success')
+    return redirect(url_for('influencers.campaign_influe'))  # Redirect to the campInflue page
+
+
+
+@influencers_bp.route('/campaign_influe')
+@login_required
+def campaign_influe():
+    influencer_id = current_user.influencer.influencer_id
+
+    # Fetch requests sent by the current influencer
+    requests = CampaignRequest.query.filter_by(influencer_id=influencer_id).all()
+# Convert the Enum status to a string (e.g., 'pending', 'accepted', 'rejected')
+    for request in requests:
+        request.status = request.status.value  # This will give you the string representation
+    # Pass data to the template
+    return render_template('campInflue.html', requests=requests)

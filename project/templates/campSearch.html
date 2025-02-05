@@ -51,7 +51,8 @@
                         <p><strong>Start Date:</strong> {{ campaign.start_date }}</p>
                         <p><strong>End Date:</strong> {{ campaign.end_date }}</p>
                         <p><strong>Minimum Followers:</strong> {{ campaign.followers_range }}</p>
-                        <button onclick="sendRequest('{{ campaign.campaign_id }}')">Request</button>
+                        <button onclick="openRequestModal({{ campaign.campaign_id }})">Request</button>
+
                         <button onclick="window.location.href='/influencers/sponsor_profile/{{ campaign.sponsor_id }}'">View Profile</button>
                     </div>
                 {% endfor %}
@@ -78,7 +79,9 @@
                         <p><strong>Start Date:</strong> {{ campaign.start_date }}</p>
                         <p><strong>End Date:</strong> {{ campaign.end_date }}</p>
                         <p><strong>Minimum Followers:</strong> {{ campaign.followers_range }}</p>
-                        <button onclick="sendRequest('{{ campaign.campaign_id }}')">Request</button>
+                        <button onclick="openRequestModal({{ campaign.campaign_id }})">Request</button>
+
+
                         <button onclick="window.location.href='/influencers/sponsor_profile/{{ campaign.sponsor_id }}'">View Profile</button>
                     </div>
                 {% endfor %}
@@ -87,17 +90,34 @@
             {% endif %}
         </div>
     </div>
+<!-- Modal for Request Description -->
+<div id="request-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h3>Send Request</h3>
+        <form id="request-form" method="POST">
+            <textarea name="request_description" placeholder="Enter your request message" required></textarea>
+            <button type="submit">Send</button>
+        </form>
+        <button onclick="closeRequestModal()">Cancel</button>
+    </div>
+</div>
 
-    <script>
-        function sendRequest(campaignId) {
-            // Implement the logic to send a request to the campaign
-            alert('Request sent for campaign with ID: ' + campaignId);
-        }
 
-    function viewProfile(campaignId) {
-        // Redirect to the campaign profile page (replace '/campaign_profile' with your route)
-        window.location.href = `/campaign_profile/${campaignId}`;
+<script>
+    function openRequestModal(campaignId) {
+        const modal = document.getElementById('request-modal');
+        const form = document.getElementById('request-form');
+        
+        // Update the form action with the selected campaign's ID
+        form.action = `/influencers/send_request/${campaignId}`;
+        modal.style.display = 'block';
     }
-    </script>
+
+    function closeRequestModal() {
+        const modal = document.getElementById('request-modal');
+        modal.style.display = 'none';
+    }
+</script>
+   
 </body>
 </html>

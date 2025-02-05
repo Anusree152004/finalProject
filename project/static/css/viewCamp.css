@@ -67,38 +67,23 @@ header {
 .hidden-details {
     display: none;
 }
-
-.requests-section, .accepted-requests-section {
-    margin-top: 30px;
+/* Container for request buttons */
+.request-buttons {
+    display: flex; /* Align child elements (forms) horizontally */
+    justify-content: flex-start; /* Align buttons to the left */
+    gap: 10px; /* Add space between buttons */
+    margin-top: 15px; /* Optional: Add space above */
 }
 
-.request, .accepted-request {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: 1px solid #ddd;
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 8px;
-    background: #f9f9f9;
-}
-
-.request-buttons, .accepted-request-buttons {
-    display: flex;
-    gap: 10px;
-}
-
-.request-buttons button, .accepted-request-buttons button {
-    padding: 10px 15px;
-    background-color: #003366; /* Dark blue button */
-    color: white;
+/* Style for all buttons */
+.request-buttons button {
+    padding: 8px 16px;
+    font-size: 14px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-}
-
-.request-buttons button:hover, .accepted-request-buttons button:hover {
-    background-color: #002244; /* Even darker blue on hover */
+    color: white;
+    transition: background-color 0.3s ease;
 }
 
 /* View button styles */
@@ -115,6 +100,7 @@ header {
 .view-details-btn:hover {
     background-color: #002244; /* Even darker blue on hover */
 }
+
 .breadcrumb {
     display: flex;
     list-style: none;
@@ -122,8 +108,9 @@ header {
     margin: 0 0 20px 0;
     background-color: transparent;
 }
-  /* Flash Messages */
-  .flash-messages .alert {
+
+/* Flash Messages */
+.flash-messages .alert {
     margin-bottom: 20px;
     padding: 15px;
     border-radius: 5px;
@@ -137,4 +124,46 @@ header {
 .flash-messages .alert-danger {
     background-color: #f8d7da;
     color: #721c24;
+}
+.button-container {
+    display: flex; /* Align forms horizontally */
+    gap: 10px; /* Add space between buttons */
+    margin-top: 10px; /* Optional spacing above buttons */
+}
+
+.button-container form {
+    margin: 0; /* Remove any default margin from forms */
+}
+
+.button-container button {
+    padding: 8px 12px; /* Add padding for better appearance */
+    font-size: 14px; /* Adjust font size */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer;
+    border: none;
+    color: #fff;
+    transition: background-color 0.3s ease;
+}
+.accept-btn {
+    background-color: #28a745; /* Green */
+}
+
+.accept-btn:hover {
+    background-color: #218838; /* Darker green */
+}
+
+.reject-btn {
+    background-color: #dc3545; /* Red */
+}
+
+.reject-btn:hover {
+    background-color: #c82333; /* Darker red */
+}
+
+.view-profile-btn {
+    background-color: #007bff; /* Blue */
+}
+
+.view-profile-btn:hover {
+    background-color: #0056b3; /* Darker blue */
 }
