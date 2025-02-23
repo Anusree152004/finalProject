@@ -2,151 +2,261 @@ from flask import Blueprint, render_template,redirect,url_for,flash,jsonify,requ
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from models import db,User,Influencer,SocialMediaMetric,Campaign,CampaignRequest,Sponsor,Post,CampaignPhoto
-import instaloader
-from statistics import mean
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import re
 from sqlalchemy import func
+import requests
+import time
+import random
 
 # Create a Blueprint for influencers
 influencers_bp = Blueprint('influencers', __name__)
 
+# Try to import Gemini AI, fallback gracefully if not available
+try:
+    import google.generativeai as genai
+    GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY', 'AIzaSyBwRfTwzPbHbK06RRyac0V-ngV_6R8cil0')
+    genai.configure(api_key=GOOGLE_API_KEY)
+    GEMINI_AVAILABLE = True
+except ImportError:
+    print("Warning: google.generativeai not available. AI analysis will be disabled.")
+    GEMINI_AVAILABLE = False
+
+class RateLimiter:
+    def __init__(self, max_requests=150, per_hours=1):
+        self.max_requests = max_requests
+        self.per_hours = per_hours
+        self.requests = []
+    
+    def wait_if_needed(self):
+        now = datetime.now()
+        self.requests = [req_time for req_time in self.requests 
+                        if now - req_time < timedelta(hours=self.per_hours)]
+        
+        if len(self.requests) >= self.max_requests:
+            sleep_time = (self.requests[0] + timedelta(hours=self.per_hours) - now).total_seconds()
+            if sleep_time > 0:
+                time.sleep(sleep_time)
+            self.requests.pop(0)
+        
+        self.requests.append(now)
+
+rate_limiter = RateLimiter()
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
+
+def analyze_profile_with_gemini(metrics):
+    """
+    Analyze influencer profile using Gemini API and extract rating
+    """
+    if not GEMINI_AVAILABLE:
+        return "AI analysis currently unavailable"
+        
+    try:
+        model = genai.GenerativeModel('gemini-pro')
+        
+        prompt = f"""
+        Rate this Instagram profile as an influencer on a scale of 1-10 and explain why in 2-3 short sentences. 
+        Format your response exactly like this example:
+        Rating: 7
+        Analysis: This is a strong micro-influencer account with excellent engagement...
+
+        Profile Data:
+        - Followers: {metrics.followers:,}
+        - Avg Likes: {metrics.avg_likes:,}
+        - Avg Comments: {metrics.avg_comments:,}
+        - Avg Reel Views: {metrics.avg_reel_views:,}
+        - Engagement Rate: {metrics.engagement_rate}%
+        - Verified: {metrics.is_verified}
+        - Business Account: {metrics.is_business_account}
+        """
+        
+        # Generate response
+        response = model.generate_content(prompt)
+        response_text = response.text
+        
+        # Parse rating and analysis
+        try:
+            rating_line = response_text.split('\n')[0]
+            rating = int(rating_line.split(':')[1].strip())
+            analysis = response_text.split('\n')[1].split(':')[1].strip()
+            
+            # Update the metrics object with AI analysis
+            metrics.ai_analysis = analysis
+            metrics.ai_rating = rating
+            db.session.commit()
+            
+            return response_text
+        except Exception as e:
+            print(f"Error parsing AI response: {str(e)}")
+            return response_text
+            
+    except Exception as e:
+        print(f"Error analyzing profile: {str(e)}")
+        return "Unable to analyze profile at this time."
 
 @influencers_bp.route('/dashboard')
 @login_required
 def dashboard():
-    # Get the user based on the current logged-in user
     user = User.query.filter_by(user_id=current_user.user_id).first()
     influencer = Influencer.query.filter_by(user_id=current_user.user_id).first()
+    
     if not user or not influencer:
         flash("User or Influencer not found.", "danger")
         return redirect(url_for('influencers.update_influencer_profile'))
-    if user:
-        # Get the social media metrics for the current user's ID (user_id)
-        metrics = SocialMediaMetric.query.filter_by(user_id=user.user_id).first()
-        
-        if metrics:
-            # Debugging: Check if metrics are fetched
-            print(f"Followers: {metrics.followers}, Engagement Rate: {metrics.engagement_rate}")
-            followers_data = [metrics.followers]
-            engagement_rate_data = [metrics.engagement_rate]
-            likes_data = [metrics.likes]
-            shares_data = [metrics.shares]
-            comments_data = [metrics.comments]
-            reach_data = [metrics.reach]
 
-            # Pass data to the template
-            return render_template(
-                'influencer_dash.html', 
-                user=user, 
-                metrics=metrics,
-                followers_data=followers_data,
-                engagement_rate_data=engagement_rate_data,
-                likes_data=likes_data,
-                shares_data=shares_data,
-                comments_data=comments_data,
-                reach_data=reach_data
-            )
-        else:
-            flash('No social media metrics found for this user.', 'danger')
-            return redirect(url_for('home'))
+    metrics = SocialMediaMetric.query.filter_by(user_id=user.user_id).first()
+    
+    if metrics:
+        # Only get AI analysis if Gemini is available
+        profile_analysis = analyze_profile_with_gemini(metrics) if GEMINI_AVAILABLE else None
+        
+        metrics_data = {
+            'followers': metrics.followers,
+            'following': metrics.following,
+            'posts': metrics.posts_count,
+            'avg_likes': metrics.avg_likes,
+            'avg_comments': metrics.avg_comments,
+            'avg_reel_views': metrics.avg_reel_views,
+            'engagement_rate': metrics.engagement_rate
+        }
+        
+        return render_template(
+            'influencer_dash.html', 
+            user=user, 
+            metrics=metrics,
+            metrics_data=metrics_data,
+            profile_analysis=profile_analysis,
+            ai_enabled=GEMINI_AVAILABLE
+        )
     else:
-        flash('No influencer found for this user.', 'danger')
+        flash('No social media metrics found for this user.', 'danger')
         return redirect(url_for('home'))
 
-
-
-# Function to fetch Instagram data
-def fetch_instagram_data(username):
-    loader = instaloader.Instaloader()
-    try:
-        profile = instaloader.Profile.from_username(loader.context, username)
-
-        # Lists to store metrics
-        reel_views = []
-        post_likes = []
-        post_comments = []
-
-        # Iterate through posts to collect metrics
-        for post in profile.get_posts():
-            if post.is_video:
-                reel_views.append(post.video_view_count)
-            post_likes.append(post.likes)
-            post_comments.append(post.comments)
-
-        # Calculate averages
-        avg_reel_views = mean(reel_views) if reel_views else 0
-        avg_likes = mean(post_likes) if post_likes else 0
-        avg_comments = mean(post_comments) if post_comments else 0
-
-        # Estimate reach
-        reach_factor = 1.5  # Example multiplier; adjust as needed
-        estimated_reach = avg_likes * reach_factor
-
-        # Calculate engagement rate
-        total_followers = profile.followers if profile.followers else 1  # Avoid division by zero
-        engagement_rate = ((avg_likes + avg_comments) / total_followers) * 100
-
-        return {
-            'followers': profile.followers,
-            'likes': avg_likes,
-            'shares': avg_reel_views,  # Using reel views as a proxy for shares
-            'comments': avg_comments,
-            'reach': estimated_reach,
-            'engagement_rate': engagement_rate,
+def get_instagram_profile(username, max_retries=5):
+    """
+    Fetch Instagram profile data with rate limiting and retries
+    """
+    def make_request():
+        time.sleep(random.uniform(3, 7))
+        url = f"https://www.instagram.com/api/v1/users/web_profile_info/?username={username}"
+        
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'X-IG-App-ID': '936619743392459',
+            'X-Requested-With': 'XMLHttpRequest'
         }
-    except Exception as e:
-        print(f"Error fetching data for {username}: {e}")
-        return None
+        
+        rate_limiter.wait_if_needed()
+        return requests.get(url, headers=headers)
 
-# Endpoint to fetch and save data for influencers
+    retry_count = 0
+    last_error = None
+    
+    while retry_count < max_retries:
+        try:
+            response = make_request()
+            
+            if response.status_code == 200:
+                data = response.json()
+                user_data = data['data']['user']
+                timeline_media = user_data['edge_owner_to_timeline_media']
+                
+                recent_posts = timeline_media.get('edges', [])[:12]
+                total_likes = 0
+                total_comments = 0
+                total_views = 0
+                reel_count = 0
+                
+                for post in recent_posts:
+                    node = post.get('node', {})
+                    total_likes += node.get('edge_liked_by', {}).get('count', 0)
+                    total_comments += node.get('edge_media_to_comment', {}).get('count', 0)
+                    if node.get('is_video', False):
+                        reel_count += 1
+                        total_views += node.get('video_view_count', 0)
+                
+                avg_likes = total_likes / len(recent_posts) if recent_posts else 0
+                avg_comments = total_comments / len(recent_posts) if recent_posts else 0
+                avg_views = total_views / reel_count if reel_count else 0
+                engagement_rate = ((avg_likes + avg_comments) / user_data['edge_followed_by']['count']) * 100 if user_data['edge_followed_by']['count'] > 0 else 0
+                
+                return {
+                    'followers': user_data['edge_followed_by']['count'],
+                    'following': user_data['edge_follow']['count'],
+                    'posts_count': user_data['edge_owner_to_timeline_media']['count'],
+                    'biography': user_data.get('biography', ''),
+                    'avg_likes': int(avg_likes),
+                    'avg_comments': int(avg_comments),
+                    'avg_reel_views': int(avg_views),
+                    'engagement_rate': round(engagement_rate, 2),
+                    'is_verified': user_data.get('is_verified', False),
+                    'is_business': user_data.get('is_business_account', False),
+                    'category': user_data.get('category_name', '')
+                }
+            
+            elif response.status_code == 429:
+                wait_time = int(response.headers.get('Retry-After', 60))
+                print(f"Rate limit hit. Waiting {wait_time} seconds...")
+                time.sleep(wait_time)
+            else:
+                print(f"Got status code {response.status_code}. Retrying...")
+                time.sleep(random.uniform(5, 10))
+            
+        except Exception as e:
+            last_error = str(e)
+            print(f"Error occurred: {last_error}. Retry {retry_count + 1}/{max_retries}")
+            time.sleep(random.uniform(5, 10))
+        
+        retry_count += 1
+    
+    return None
+
 @influencers_bp.route('/fetch_influencer_metrics', methods=['POST'])
+@login_required
 def fetch_influencer_metrics():
     try:
-        # Query usernames of all influencers from the Users table
-        influencer_users = User.query.filter_by(role='influencer').all()
+        user = User.query.get(current_user.user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
 
-        for user in influencer_users:
-            username = user.username  # Fetch username from Users table
+        # Fetch Instagram data
+        data = get_instagram_profile(user.username)
+        if not data:
+            return jsonify({'error': 'Failed to fetch Instagram data'}), 500
 
-            # Fetch Instagram data for this username
-            data = fetch_instagram_data(username)
+        # Update or create metrics
+        metrics = SocialMediaMetric.query.filter_by(user_id=user.user_id).first()
+        if not metrics:
+            metrics = SocialMediaMetric(user_id=user.user_id)
+            db.session.add(metrics)
 
-            if data:
-                # Check if data already exists for this influencer
-                existing_metric = SocialMediaMetric.query.filter_by(user_id=user.user_id).first()
+        # Update metrics with new data
+        metrics.followers = data['followers']
+        metrics.following = data['following']
+        metrics.posts_count = data['posts_count']
+        metrics.avg_likes = data['avg_likes']
+        metrics.avg_comments = data['avg_comments']
+        metrics.avg_reel_views = data['avg_reel_views']
+        metrics.engagement_rate = data['engagement_rate']
+        metrics.is_verified = data['is_verified']
+        metrics.is_business_account = data['is_business']
+        metrics.bio = data['biography']
+        metrics.platform = 'instagram'
+        metrics.updated_at = datetime.utcnow()
 
-                if existing_metric:
-                    # Update existing record
-                    existing_metric.followers = data['followers']
-                    existing_metric.likes = data['likes']
-                    existing_metric.shares = data['shares']
-                    existing_metric.comments = data['comments']
-                    existing_metric.reach = data['reach']
-                    existing_metric.engagement_rate = data['engagement_rate']
-                    existing_metric.updated_at = datetime.utcnow()
-                else:
-                    # Add a new record
-                    new_metric = SocialMediaMetric(
-                        user_id=user.user_id,  # Using the user ID from Users table as influencer ID
-                        sponsor_id=None,  # Populate if necessary
-                        followers=data['followers'],
-                        likes=data['likes'],
-                        shares=data['shares'],
-                        comments=data['comments'],
-                        reach=data['reach'],
-                        engagement_rate=data['engagement_rate'],
-                    )
-                    db.session.add(new_metric)
-
-        # Commit all changes
+        # Get AI analysis and store it
+        analyze_profile_with_gemini(metrics)
+        
         db.session.commit()
-        return jsonify({'message': 'Social media metrics fetched and updated successfully!'}), 200
+        return jsonify({'message': 'Metrics and analysis updated successfully'}), 200
 
     except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
     
 

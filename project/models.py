@@ -78,7 +78,7 @@ class Influencer(db.Model):
     campaign_requests = db.relationship('CampaignRequest', backref='influencer', lazy=True)
     influencer_requests = db.relationship('InfluencerRequest', backref='influencer_requests', lazy=True)
    # social_media_metrics = db.relationship('SocialMediaMetric', backref='influencer', lazy=True)
-    metrics_history = db.relationship('MetricsHistory', backref='influencer', lazy=True)
+    #metrics_history = db.relationship('MetricsHistory', backref='influencer', lazy=True)
 
 # Campaign Table
 class Campaign(db.Model):
@@ -124,6 +124,7 @@ class CampaignRequest(db.Model):
 class InfluencerRequest(db.Model):
     __tablename__ = 'influencer_request'
     request_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    influencer_id = db.Column(db.Integer, db.ForeignKey('influencer.influencer_id'), nullable=False, index=True)
     sponsor_id = db.Column(db.Integer, db.ForeignKey('sponsor.sponsor_id'), nullable=False, index=True)
     influencer_id = db.Column(db.Integer, db.ForeignKey('influencer.influencer_id'), nullable=False, index=True)
     status = db.Column(Enum(StatusEnum), default=StatusEnum.PENDING, nullable=False, index=True)
@@ -139,27 +140,22 @@ class SocialMediaMetric(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False, index=True)
     sponsor_id = db.Column(db.Integer, db.ForeignKey('sponsor.sponsor_id'), index=True,nullable=True)
     followers = db.Column(db.Integer, nullable=False)
-    likes = db.Column(db.Integer, nullable=False)
-    shares = db.Column(db.Integer)
-    comments = db.Column(db.Integer)
-    reach = db.Column(db.Integer, nullable=False)
+    following = db.Column(db.Integer)
+    posts_count = db.Column(db.Integer)
+    avg_likes = db.Column(db.Float)
+    avg_comments = db.Column(db.Float)
+    avg_reel_views = db.Column(db.Float)
     engagement_rate = db.Column(db.Float, nullable=False)
+    is_verified = db.Column(db.Boolean, default=False)
+    is_business_account = db.Column(db.Boolean, default=False)
+    bio = db.Column(db.Text)
+    platform = db.Column(db.String(50), default='instagram')
     updated_at = db.Column(db.DateTime, default=datetime.utcnow)
+    ai_analysis = db.Column(db.Text)  # New field for storing AI analysis
+    ai_rating = db.Column(db.Integer)  # New field for storing AI rating
 
     #user = db.relationship('User', backref='social_media_metrics', lazy=True)
 
-# # Metric History Table
-class MetricsHistory(db.Model):
-    __tablename__ = 'metric_history'
-    history_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    influencer_id = db.Column(db.Integer, db.ForeignKey('influencer.influencer_id'), nullable=False, index=True)
-    followers = db.Column(db.Integer, nullable=False)
-    likes = db.Column(db.Integer, nullable=False)
-    shares = db.Column(db.Integer)
-    comments = db.Column(db.Integer)
-    reach = db.Column(db.Integer)
-    engagement_rate = db.Column(db.Float, nullable=False)
-    recorded_at = db.Column(db.DateTime, default=datetime.utcnow)
 
   #  influencer = db.relationship('Influencer', backref='metrics_history', lazy=True)
 

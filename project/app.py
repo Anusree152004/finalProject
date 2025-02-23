@@ -6,7 +6,7 @@ from flask_migrate import Migrate
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from sponsors import sponsors_bp
 from influencers import influencers_bp
-from influencers import fetch_instagram_data
+from influencers import get_instagram_profile
 from werkzeug.security import generate_password_hash, check_password_hash
 from utils import generate_breadcrumbs
 import os
@@ -28,7 +28,10 @@ app.secret_key = '_protected_key'
 # Initialize the database
 
 db.init_app(app)
+migrate = Migrate(app, db)
+
 with app.app_context():
+    db.drop_all()  # Only if you want to start fresh
     db.create_all()
     
 login_manager = LoginManager(app)
@@ -111,18 +114,22 @@ def signup():
             )
             db.session.add(influencer)
             
-
-# Fetch Instagram metrics for the influencer
-            instagram_data = fetch_instagram_data(username)  # Using the username as Instagram username
+            # Fetch Instagram metrics using new API
+            instagram_data = get_instagram_profile(username)
             if instagram_data:
                 social_metrics = SocialMediaMetric(
                     user_id=new_user.user_id,
                     followers=instagram_data['followers'],
-                    likes=instagram_data['likes'],
-                    shares=instagram_data['shares'],
-                    comments=instagram_data['comments'],
-                    reach=instagram_data['reach'],
-                    engagement_rate=instagram_data['engagement_rate']
+                    following=instagram_data['following'],
+                    posts_count=instagram_data['posts_count'],
+                    avg_likes=instagram_data['avg_likes'],
+                    avg_comments=instagram_data['avg_comments'],
+                    avg_reel_views=instagram_data['avg_reel_views'],
+                    engagement_rate=instagram_data['engagement_rate'],
+                    is_verified=instagram_data['is_verified'],
+                    is_business_account=instagram_data['is_business'],
+                    bio=instagram_data['biography'],
+                    platform='instagram'
                 )
                 db.session.add(social_metrics)
             else:

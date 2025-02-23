@@ -3,86 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home | Connect & Collaborate</title>
+    <title>SponsorMatch - Connect Influencers & Sponsors</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <!-- Navigation Bar -->
+    <div class="loading-animation"></div>
+    
     <header>
         <nav>
-            <div class="logo">InfluencerHub</div>
-            <ul class="nav-links">
-                <li><a href="#">Home</a></li>
-                <li><a href="#features">Features</a></li>
-                <li><a href="#testimonials">Testimonials</a></li>
-                <li><a href="/login">Login</a></li>
-                <li><a href="/signup">Sign Up</a></li>
-            </ul>
+            <div class="logo">SponsorMatch</div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#partners">Partners</a>
+                <a href="{{ url_for('login') }}" class="login-btn">Login</a>
+                <a href="{{ url_for('signup') }}" class="signup-btn">Get Started</a>
+            </div>
         </nav>
     </header>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-content">
-            <h1>Connect. Collaborate. Grow.</h1>
-            <p>The ultimate platform for sponsors and influencers to collaborate and achieve marketing success.</p>
-            <!-- <div class="cta-buttons">
-                <a href="/signup?sponsor=true" class="btn">Join as Sponsor</a>
-                <a href="/signup?influencer=true" class="btn">Join as Influencer</a>
-            </div> -->
-        </div>
-    </section>
+    <main>
+        <section class="hero glass-effect">
+            <div class="hero-content">
+                <h1>Connect with <span class="gradient-text">Influencers</span><br>& <span class="gradient-text">Sponsors</span></h1>
+                <p>Your Gateway to Successful Brand Collaborations</p>
+                <div class="cta-buttons">
+                    <a href="{{ url_for('signup') }}" class="btn primary-btn">Get Started</a>
+                    <a href="#features" class="btn secondary-btn">Learn More</a>
+                </div>
+            </div>
+            <div class="floating-cards">
+                <div class="card glass-effect">
+                    <div class="card-content">
+                        <h3>For Influencers</h3>
+                        <ul>
+                            <li><i class="fas fa-chart-line"></i> Track your growth</li>
+                            <li><i class="fas fa-handshake"></i> Find brand deals</li>
+                            <li><i class="fas fa-chart-pie"></i> Analytics dashboard</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card glass-effect">
+                    <div class="card-content">
+                        <h3>For Sponsors</h3>
+                        <ul>
+                            <li><i class="fas fa-search"></i> Find perfect matches</li>
+                            <li><i class="fas fa-bullseye"></i> Target your audience</li>
+                            <li><i class="fas fa-chart-bar"></i> Track campaign success</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-    <!-- Features Section -->
-    <section id="features">
-        <h2>Features</h2>
-        <div class="features-container">
-            <div class="feature-card">
-                <img src="{{ url_for('static', filename='images/influencers.jpg') }}" alt="Discover Influencers">
-                <div class="feature-card-content">
-                    <h3>Discover Influencers</h3>
-                    <p>Easily search and find influencers based on your needs. Tailor your search by categories, location, budget, and more.</p>
+        <section id="features" class="features glass-effect">
+            <h2>Why Choose Us</h2>
+            <div class="features-container">
+                <div class="feature-card">
+                    <i class="fas fa-robot fa-3x"></i>
+                    <h3>AI-Powered Matching</h3>
+                    <p>Smart algorithms to find your perfect partnership match</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-chart-line fa-3x"></i>
+                    <h3>Real-time Analytics</h3>
+                    <p>Comprehensive dashboard with detailed performance metrics</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-shield-alt fa-3x"></i>
+                    <h3>Secure Platform</h3>
+                    <p>Safe and transparent collaboration environment</p>
                 </div>
             </div>
-            <div class="feature-card">
-                <img src="{{ url_for('static', filename='images/campagin.jpg') }}" alt="Create Campaigns">
-                <div class="feature-card-content">
-                    <h3>Create Campaigns</h3>
-                    <p>Launch and manage marketing campaigns with ease. Track performance and adjust strategies for success.</p>
-                </div>
-            </div>
-            <div class="feature-card">
-                <img src="{{ url_for('static', filename='images/analysis.jpg') }}" alt="Real-Time Analytics">
-                <div class="feature-card-content">
-                    <h3>Real-Time Analytics</h3>
-                    <p>Monitor your campaign performance in real-time and analyze the results to optimize your strategies.</p>
-                </div>
-            </div>
-            <div class="feature-card">
-                <img src="{{ url_for('static', filename='images/connection.jpg') }}" alt="Build Connections">
-                <div class="feature-card-content">
-                    <h3>Build Connections</h3>
-                    <p>Collaborate with influencers and other industry leaders to grow your brand and increase reach.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Footer -->
-    <footer>
+        <section class="stats glass-effect">
+            <div class="stats-container">
+                <div class="stat-card">
+                    <span class="stat-number">500+</span>
+                    <span class="stat-label">Active Campaigns</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">1000+</span>
+                    <span class="stat-label">Successful Matches</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">95%</span>
+                    <span class="stat-label">Satisfaction Rate</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="glass-effect">
         <div class="footer-content">
-            <ul>
-                <li><a href="#">Privacy Policy</a></li>
-                <li><a href="#">Terms of Service</a></li>
-                <li><a href="#">Contact Us</a></li>
-            </ul>
-            <div class="social-icons">
-                <a href="#" class="fab fa-facebook-f"></a>
-                <a href="#" class="fab fa-twitter"></a>
-                <a href="#" class="fab fa-instagram"></a>
+            <div class="footer-section">
+                <h3>SponsorMatch</h3>
+                <p>Connecting influencers and sponsors worldwide</p>
             </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#partners">Partners</a>
+            </div>
+            <div class="footer-section">
+                <h3>Contact</h3>
+                <p>Email: contact@sponsormatch.com</p>
+                <p>Phone: (123) 456-7890</p>
+            </div>
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-linkedin"></i></a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 SponsorMatch. All rights reserved.</p>
         </div>
     </footer>
+
+    <script>
+        // Add smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add animation on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('show');
+                }
+            });
+        });
+
+        document.querySelectorAll('.feature-card, .stat-card, .card').forEach((el) => observer.observe(el));
+    </script>
 </body>
 </html>
